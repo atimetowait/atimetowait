@@ -1,0 +1,35 @@
+services:
+  site:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    volumes:
+      - .:/work
+    working_dir: /work
+    init: true
+    environment:
+      CHOKIDAR_USEPOLLING: "true"
+      CHOKIDAR_INTERVAL: "1000"
+    command:
+      - sh
+      - -c
+      - make && exec live-server --host=0.0.0.0 --port=8080 --no-browser .
+    develop:
+      watch:
+        - path: ./demo
+          action: sync+exec
+          target: /work/demo
+          exec:
+            command: make
+        - path: ./src
+          action: sync
+          target: /work/src
+        - path: ./Makefile
+          action: sync+exec
+          target: /work/Makefile
+          exec:
+            command: make
+        - path: ./package.json
+          action: rebuild

@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="$lang$" xml:lang="$lang$"$if(dir)$ dir="$dir$"$endif$>
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+$for(author-meta)$
+  <meta name="author" content="$author-meta$" />
+$endfor$
+$if(date-meta)$
+  <meta name="dcterms.date" content="$date-meta$" />
+$endif$
+$if(keywords)$
+  <meta name="keywords" content="$for(keywords)$$keywords$$sep$, $endfor$" />
+$endif$
+$if(description-meta)$
+  <meta name="description" content="$description-meta$" />
+$endif$
+  <title>$if(page-title)$$page-title$ – $endif$$title$</title>
+$for(css)$
+  <link rel="stylesheet" href="$css$" />
+$endfor$
+$for(header-includes)$
+  $header-includes$
+$endfor$
+$if(math)$
+  $math$
+$endif$
+</head>
+<body>
+$for(include-before)$
+$include-before$
+$endfor$
+<table class="header">
+  <tr>
+    <td class="width-auto">
+      <h1 class="title"><a href="/">$title$</a></h1>
+      <span class="subtitle">$subtitle$</span>
+    </td>
+  </tr>
+</table>
+
+$if(abstract)$
+<div class="abstract">
+<div class="abstract-title">$abstract-title$</div>
+$abstract$
+</div>
+$endif$
+<details class="toc-dropdown" id="site-guide"$if(page-title)$$else$ open$endif$>
+$if(toc-title)$
+<summary id="site-guide-title">$toc-title$</summary>
+$else$
+<summary id="site-guide-title">Site Guide</summary>
+$endif$
+<nav class="site-guide" role="navigation">
+<ul>
+  <li><a href="/">Home</a></li>
+  <li><a href="musings.html">Musings</a></li>
+  <li><a href="sightseeing.html">Sightseeing</a></li>
+</ul>
+</nav>
+</details>
+$body$
+$if(journal-entry)$
+<p class="journal-back"><a href="/musings.html">← Musings</a></p>
+$endif$
+$for(include-after)$
+$include-after$
+$endfor$
+  <div class="debug-grid"></div>
+  <script src="/src/index.js"></script>
+</body>
+</html>
