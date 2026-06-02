@@ -618,13 +618,6 @@ label input {
   max-width: 70ch;
   width: 100%;
 }
-.sightseeing-gallery img {
-  display: block;
-  max-height: calc(var(--line-height) * 28);
-  width: 100%;
-  height: auto;
-  object-fit: contain;
-}
 .sightseeing-gallery figcaption {
   margin-top: calc(var(--line-height) * 0.5);
   font-size: 0.85rem;
