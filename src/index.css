@@ -118,7 +118,15 @@ a:link, a:visited {
 }
 
 p {
-  margin-bottom: var(--line-height);
+  line-height: 1.4;
+  margin-bottom: 1.1em;
+}
+
+@media (max-width: 768px) {
+  p {
+    line-height: 1.8;
+    margin-bottom: 1rem;
+  }
 }
 
 strong {
@@ -283,6 +291,11 @@ details.details-plain > :not(summary) {
 }
 .site-guide li + li {
   margin-top: calc(var(--line-height) * 0.75);
+}
+
+.journal-entry p {
+  margin-bottom: 1.25rem;
+  line-height: 1.7;
 }
 
 .journal-index {
@@ -594,14 +607,10 @@ label input {
 .grid:has(> :last-child:nth-child(8)) { --grid-cells: 8; }
 .grid:has(> :last-child:nth-child(9)) { --grid-cells: 9; }
 
-.sightseeing-gallery {
-  display: flex;
-  flex-direction: column;
-  gap: calc(var(--line-height) * 0.75);
-  overflow-y: auto;
-  max-height: calc(var(--line-height) * 40);
-  padding: 0 0 var(--line-height);
-  align-items: center;
+.sightseeing-gallery img {
+  display: block;
+  width: 100%;
+  height: auto;
 }
 .sightseeing-gallery figure {
   margin: 0;

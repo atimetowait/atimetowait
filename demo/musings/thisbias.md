@@ -4,7 +4,7 @@ subtitle: freya langley // aCadogan
 lang: en
 toc-title: Site Guide
 page-title: "nulled"
-date: 2076-2-16
+date: 2076-2-14
 summary: "this bias is beginning to show"
 tags: [NULLED]
 journal-entry: true
