@@ -109,7 +109,7 @@ Nothing…comes from ash.
 You must break, collapse...then finally!  
 
 Eclipse yourself in nature, and lastly now!!!<br>
-Forsake them.  <br>
+Forsake them.<br>
 All. Of. Them.<br>
 For all who bear witness to this inwards collapse.<br>
 Believe me.<br>

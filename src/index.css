@@ -64,12 +64,11 @@ body {
   max-width: 80ch;
 }
 
-@media screen and (max-width: 480px) {
-  :root {
-    font-size: 14px;
-  }
-  body {
-    padding: var(--line-height) 1ch;
+@media (max-width: 768px) {
+  br {
+    display: inline;
+    margin: 0;
+    padding: 0;
   }
 }
 
