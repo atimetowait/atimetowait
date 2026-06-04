@@ -37,7 +37,12 @@
 * {
   box-sizing: border-box;
 }
-
+p {
+  text-indent: 1em;
+}
+p {
+  margin: 0;
+}
 
 p + p {
   margin-top: 1rem;
@@ -184,6 +189,10 @@ th {
 }
 .width-auto {
   width: 100%;
+}
+
+.center {
+  text-align: center;
 }
 
 .header {

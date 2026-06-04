@@ -10,11 +10,13 @@ tags: [NULLED]
 journal-entry: true
 ---
 
-<em>Oddity 1: The Ossuary</em><br><br>
-Ever since I was this young-minded, fickle girl. <br>There has been this incessant…ticking-like sensation in my head. Much how a clock works, sure.
-Or better yet…a bomb.  
+<p><em>Oddity 1: The Ossuary</em><br></p>
+<p class="center">
+Ever since I was this young-minded, fickle girl.
+</p>
+<p>There has been this incessant…ticking-like sensation in my head. Much how a clock works, sure. Or better yet…a bomb.
 But this kind has no timer…it just goes, and goes.
-On, to off. <br><br>It trails to the beats of my chest again, still. It rises to this anxiety curdling inside of me.  
+On, to off. It trails to the beats of my chest again, still. It rises to this anxiety curdling inside of me. </p>  
 And as I'm waiting, it feels like I’m an atom — soon to split.<br>
 Though, as this bomb is ticking, (it has to be counting in the negatives by now) it’s still mute for everyone else. This is insidious I think, it’s deafening. <br>Where is the fissure?<br> <br>When does the redemption from this mortal failure, (some would call it a success) start?
 This is maybe just what someone like me needs to slowly lose control—And maybe that’s just what I want.
@@ -82,8 +84,8 @@ Just enough for it to take shape in those...smaller spaces, like you take forth 
 
 For why?<br> 
 
-Yet, there’s still no threading to you!
-Nor thread-like lines exposed!!!  
+<p>Yet, there’s still no threading to you!
+Nor thread-like lines exposed!!!<br> </p>
 No frizz from the friction, or worn down nature in your frame. <br>No guidance to follow towards your aches...no rhyme to the songs you alone sing. 
 
 Though, I know all of which has been shaving, weighing...even breaking you down. Again I ask, why? 
