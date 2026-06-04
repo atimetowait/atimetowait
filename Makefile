@@ -5,15 +5,19 @@ PANDOC=pandoc -s --css /src/reset.css --css /src/index.css \
 	-Vversion=v$(VERSION) -Vdate=$(DATE) \
 	--template=demo/template.html
 
-HTML_PAGES=index.html musings.html bookkeeping.html sightseeing.html
+HTML_PAGES=index.html \
+	musings/index.html \
+	bookkeeping/index.html \
+	sightseeing/index.html
+
 JOURNAL_ENTRIES=$(filter-out demo/musings/_%.md,$(wildcard demo/musings/*.md))
-JOURNAL_HTML=$(patsubst demo/musings/%.md,musings/%.html,$(JOURNAL_ENTRIES))
+JOURNAL_HTML=$(patsubst demo/musings/%.md,musings/%/index.html,$(JOURNAL_ENTRIES))
 
 all: $(HTML_PAGES) $(JOURNAL_HTML)
 
 clean:
-	rm -f $(HTML_PAGES) demo/musings.generated.md
-	rm -rf musings
+	rm -f index.html demo/musings.generated.md
+	rm -rf musings sightseeing bookkeeping
 
 demo/musings.generated.md: $(JOURNAL_ENTRIES) scripts/build-musings-index.py
 	python3 scripts/build-musings-index.py
@@ -21,14 +25,20 @@ demo/musings.generated.md: $(JOURNAL_ENTRIES) scripts/build-musings-index.py
 index.html: demo/index.md demo/template.html Makefile
 	$(PANDOC) -i demo/index.md -o $@
 
-musings.html: demo/musings.generated.md demo/template.html Makefile
+musings/index.html: demo/musings.generated.md demo/template.html Makefile
+	mkdir -p musings
 	$(PANDOC) -i demo/musings.generated.md -o $@
 
-bookkeeping.html sightseeing.html: %.html: demo/%.md demo/template.html Makefile
-	$(PANDOC) -i demo/$*.md -o $@
+bookkeeping/index.html: demo/bookkeeping.md demo/template.html Makefile
+	mkdir -p bookkeeping
+	$(PANDOC) -i demo/bookkeeping.md -o $@
 
-musings/%.html: demo/musings/%.md demo/template.html Makefile
-	mkdir -p musings
+sightseeing/index.html: demo/sightseeing.md demo/template.html Makefile
+	mkdir -p sightseeing
+	$(PANDOC) -i demo/sightseeing.md -o $@
+
+musings/%/index.html: demo/musings/%.md demo/template.html Makefile
+	mkdir -p musings/$*
 	$(PANDOC) -i demo/musings/$*.md -o $@
 
 serve: all

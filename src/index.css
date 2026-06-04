@@ -37,11 +37,9 @@
 * {
   box-sizing: border-box;
 }
-p {
-  text-indent: 1em;
-}
-p {
-  margin: 0;
+
+.entry p {
+  text-indent: 1.5em;
 }
 
 p + p {
@@ -194,7 +192,6 @@ th {
 .center {
   text-align: center;
 }
-
 .header {
   --header-title-gap: calc(var(--line-height) * 0.5);
   --header-edge-gap: calc(var(--line-height) * 0.5);

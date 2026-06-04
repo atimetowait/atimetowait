@@ -14,11 +14,23 @@ journal-entry: true
 <p class="center">
 Ever since I was this young-minded, fickle girl.
 </p>
-<p>There has been this incessant…ticking-like sensation in my head. Much how a clock works, sure. Or better yet…a bomb.
-But this kind has no timer…it just goes, and goes.
-On, to off. It trails to the beats of my chest again, still. It rises to this anxiety curdling inside of me. </p>  
-And as I'm waiting, it feels like I’m an atom — soon to split.<br>
-Though, as this bomb is ticking, (it has to be counting in the negatives by now) it’s still mute for everyone else. This is insidious I think, it’s deafening. <br>Where is the fissure?<br> <br>When does the redemption from this mortal failure, (some would call it a success) start?
+<br>
+<article class="entry">
+<p>It's always been this incessant…ticking-like sensation in my head. Much like how a clock works, sure. Or better yet…a bomb.
+But, this kind has no timer…it just goes, and goes.
+On, to off. It trails to the beats of my chest. Again, stilling, rising — to this anxiety curdling inside of my frame. </p>  
+</article><br>
+<article class="entry">
+<p>As I'm waiting, it feels like I’m an atom — soon to split.
+Though, as this bomb is ticking, (it's taunting me by being in the negatives by now)...it’s still mute for everyone else. This is insidious I think, it’s deafening to only me.<p>
+</article> 
+<p class="center">
+Where is the fissure?
+</p>
+<br>
+<article class="entry">
+
+When does the redemption from this mortal failure, (some would call it a success) start?
 This is maybe just what someone like me needs to slowly lose control—And maybe that’s just what I want.
 
 "It reverberates, and echoes you know.
