@@ -32,7 +32,7 @@ I'm just glad I sold all the music equipment I owned before even thinking of doi
 It's out there still, like my heart for you.<br><br>
 In perptuality, a drift. <br>
 Somehow as still as it's meant to be, <br>
-As the version that that always would have said 'I do'<br>
+As the version that always would have said 'I do'<br>
 
 —
 

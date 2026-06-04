@@ -122,11 +122,9 @@ p {
   margin-bottom: 1.1em;
 }
 
-@media (max-width: 768px) {
-  p {
-    line-height: 1.8;
-    margin-bottom: 1rem;
-  }
+p {
+  line-height: var(--line-height);
+  margin-bottom: var(--line-height);
 }
 
 strong {
