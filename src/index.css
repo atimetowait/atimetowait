@@ -55,13 +55,7 @@ html {
 }
 
 body {
-  position: relative;
-  width: 100%;
-  margin: 0;
-  padding: var(--line-height) 2ch;
-  max-width: calc(min(80ch, round(down, 100%, 1ch)));
-  line-height: var(--line-height);
-  overflow-x: hidden;
+  max-width: 80ch;
 }
 
 @media screen and (max-width: 480px) {
@@ -149,11 +143,7 @@ sub {
 }
 
 table {
-  position: relative;
-  top: calc(var(--line-height) / 2);
-  width: calc(round(down, 100%, 1ch));
-  border-collapse: collapse;
-  margin: 0 0 calc(var(--line-height) * 2);
+  width: 100%;
 }
 
 th, td {
