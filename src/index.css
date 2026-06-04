@@ -39,8 +39,14 @@
 }
 
 
-* + * {
-  margin-top: var(--line-height);
+p + p {
+  margin-top: 1rem;
+}
+
+br + br {
+  display: block;
+  content: "";
+  margin-top: 1rem;
 }
 
 html {
@@ -117,8 +123,17 @@ p {
 }
 
 p {
-  line-height: var(--line-height);
-  margin-bottom: var(--line-height);
+  margin: 0;
+}
+
+p + p {
+  margin-top: 1rem;
+}
+
+br + br {
+  display: block;
+  content: "";
+  margin-top: 1rem;
 }
 
 strong {
