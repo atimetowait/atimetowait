@@ -326,8 +326,8 @@ details.details-plain > :not(summary) {
 }
 
 p {
-  word-break: break-word;
-  word-wrap: break-word;
+  overflow-wrap: break-word;
+  word-break: normal;
   hyphens: auto;
 }
 
