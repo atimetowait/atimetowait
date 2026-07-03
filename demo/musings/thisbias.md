@@ -276,3 +276,43 @@ Something only my feeble frame can do, eventually, <br>I can imagine these hands
 It's still just me.<br>
 
 Through it all.
+
+Oddity Four: pulling on grass wont make it grow any faster
+
+Cascading, there were motions upon faucets of reality pasrable before you even met my eye. I saw blank screens, and seemed to flinch when people held up an LED screen to my face. There tends to be something nueautering in the reality of pixels dancing like how I wished I could without a top on - even more so if that same screen was recording my shamelessness, displayed on a billboard.
+
+But there I am, ritualistically fluffing myself to peck upwards at you. 
+Notice me, percieve me quietly, point out a weaknesss, and swallow me whole. No traces. 
+Maybe that's just fusing liminally, is. 
+
+There were two louds humms shortly after coming home I couldn't quite turn off. One, the rattling echo in my chest, and two - Your songbird-like hymms that soothed that rattle to rhythm, into harmonies made to compliment inaudibles I can't seem to speak out loud.
+
+i am a songbird and shes the only song i hear
+i am a songbird and shes the only song i hear
+i am a songbird and shes the only song i hear
+
+Floating away, from the shore and fears that's been holding you back from all these years you should know 
+that this
+is not
+real
+
+Takin aback by the words that you said you stayed up that night hoping that you were dead.
+dont you know
+that is 
+was not
+for real
+
+sympathieze the trouble and needs clawing at your back while you try to sleep dont you know that this is not real.
+trying to find
+the right words to say 
+but theres nothing to keep your mind safe
+now you know 
+
+that this is not 
+real .
+
+I lost track of time again, blending natures. 
+Fusing liminally is<br>
+It<br>
+It is
+The ballroom dance of your dreams.
