@@ -8,8 +8,9 @@ date: 2026-01-01
 summary: "one-line hook for the index"
 tags: [tag]
 journal-entry: true
+from: markdown+hard_line_breaks
 ---
 
-Write your dispatch here.
+Write your dispatch here. Press Enter once for a new line. Leave a blank line for a new paragraph.
 
 <hr>

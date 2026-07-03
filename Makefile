@@ -5,6 +5,8 @@ PANDOC=pandoc -s --css /src/reset.css --css /src/index.css \
 	-Vversion=v$(VERSION) -Vdate=$(DATE) \
 	--template=demo/template.html
 
+JOURNAL_PANDOC=$(PANDOC) -f markdown+hard_line_breaks
+
 HTML_PAGES=index.html \
 	musings/index.html \
 	bookkeeping/index.html \
@@ -39,7 +41,7 @@ sightseeing/index.html: demo/sightseeing.md demo/template.html Makefile
 
 musings/%/index.html: demo/musings/%.md demo/template.html Makefile
 	mkdir -p musings/$*
-	$(PANDOC) -i demo/musings/$*.md -o $@
+	$(JOURNAL_PANDOC) -i demo/musings/$*.md -o $@
 
 serve: all
 	live-server --open=/ --host=127.0.0.1 .

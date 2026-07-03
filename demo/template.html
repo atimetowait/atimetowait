@@ -60,9 +60,13 @@ $endif$
 </ul>
 </nav>
 </details>
-$body$
 $if(journal-entry)$
+<div class="journal-entry">
+$body$
+</div>
 <p class="journal-back"><a href="/musings/">← Musings</a></p>
+$else$
+$body$
 $endif$
 $for(include-after)$
 $include-after$

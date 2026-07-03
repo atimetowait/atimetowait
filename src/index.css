@@ -301,9 +301,42 @@ details.details-plain > :not(summary) {
   margin-top: calc(var(--line-height) * 0.75);
 }
 
+.journal-entry {
+  line-height: var(--line-height);
+}
+
 .journal-entry p {
-  margin-bottom: 1.25rem;
-  line-height: 1.7;
+  margin: 0;
+  line-height: var(--line-height);
+}
+
+.journal-entry p + p {
+  margin-top: var(--line-height);
+}
+
+.journal-entry br {
+  line-height: inherit;
+}
+
+.journal-entry br + br {
+  display: none;
+}
+
+.journal-entry br:has(+ br) {
+  display: block;
+  height: var(--line-height);
+}
+
+.journal-entry > br {
+  display: none;
+}
+
+.journal-entry article {
+  display: block;
+}
+
+.journal-entry > * + * {
+  margin-top: var(--line-height);
 }
 
 .journal-index {
