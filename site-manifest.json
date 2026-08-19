@@ -1,0 +1,81 @@
+{
+  "generated": "2026-08-19",
+  "sections": [
+    {
+      "name": "home",
+      "href": "/",
+      "description": "who i am, and what this is"
+    },
+    {
+      "name": "musings",
+      "href": "/musings/",
+      "description": "the writing, newest first"
+    },
+    {
+      "name": "sightseeing",
+      "href": "/sightseeing/",
+      "description": "photographs, mostly from before"
+    },
+    {
+      "name": "listen",
+      "href": "/listen/",
+      "description": "music, under whichever name"
+    },
+    {
+      "name": "bookkeeping",
+      "href": "/bookkeeping/",
+      "description": "a running ledger of small things"
+    },
+    {
+      "name": "archive",
+      "href": "/archive/",
+      "description": "everything at once, out of order"
+    }
+  ],
+  "entries": [
+    {
+      "slug": "thisbias",
+      "title": "nulled",
+      "summary": "this bias is beginning to show",
+      "date": "2076-02-14",
+      "tags": [
+        "NULLED"
+      ],
+      "mood": "ember",
+      "href": "/musings/thisbias/"
+    },
+    {
+      "slug": "spiritual_instability",
+      "title": "spiritual instability",
+      "summary": "A movement of spiritual instability",
+      "date": "2026-07-02",
+      "tags": [
+        "insync.avi"
+      ],
+      "mood": "vhs",
+      "href": "/musings/spiritual_instability/"
+    },
+    {
+      "slug": "icymi",
+      "title": "in case you missed it",
+      "summary": "icymi",
+      "date": "2026-06-27",
+      "tags": [
+        "stuff you don't really say out loud"
+      ],
+      "mood": "bruise",
+      "href": "/musings/icymi/"
+    },
+    {
+      "slug": "myownkin",
+      "title": "a&m",
+      "summary": "you and your mind are both really beautiful",
+      "date": "1999-11-10",
+      "tags": [
+        "tag yourself"
+      ],
+      "mood": "amber",
+      "href": "/musings/myownkin/"
+    }
+  ]
+}

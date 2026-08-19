@@ -1,0 +1,7 @@
+# Editor / tooling config, not part of the site
+.claude/
+.direnv/
+.DS_Store
+
+# Nix / direnv build output
+result

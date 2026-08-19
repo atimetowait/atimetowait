@@ -4,7 +4,27 @@
   <meta charset="utf-8" />
   <meta name="generator" content="pandoc" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <meta name="description" content="Personal site and writing by Alice C. — songwriter, composer, artist. Chronic illness, grief, and getting better naturally." />
   <title>atimetowait</title>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+
+  <meta property="og:site_name" content="atimetowait" />
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="atimetowait" />
+  <meta property="og:description" content="freya langley // aCadogan" />
+  <meta property="article:published_time" content="2026-08-19" />
+  <meta name="twitter:card" content="summary" />
+
+  <!-- Apply a saved theme before first paint, so choosing light on a dark OS
+       doesn't flash black first. Mirrors the `theme` terminal command. -->
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("atimetowait:theme");
+        if (t) document.documentElement.setAttribute("data-theme", t);
+      } catch (e) {}
+    })();
+  </script>
   <link rel="stylesheet" href="/src/reset.css" />
   <link rel="stylesheet" href="/src/index.css" />
 </head>
@@ -18,6 +38,10 @@
   </tr>
 </table>
 
+<!-- terminal.js builds the prompt here instead of in the footer. Empty on
+     purpose: without JS this collapses to nothing and the page below still
+     reads normally. -->
+<div id="tty-mount"></div>
 <details class="toc-dropdown" id="site-guide" open>
 <summary id="site-guide-title">Site Guide</summary>
 <nav class="site-guide" role="navigation">
@@ -25,29 +49,33 @@
   <li><a href="/">Home</a></li>
   <li><a href="/musings/">Musings</a></li>
   <li><a href="/sightseeing/">Sightseeing</a></li>
+  <li><a href="/listen/">Listen</a></li>
+  <li><a href="/bookkeeping/">Bookkeeping</a></li>
+  <li><a href="/archive/">Archive</a></li>
 </ul>
 </nav>
 </details>
 <hr>
+<div id="intro" class="home-prose">
 <p>Hey,</p>
-<p>
 <p>my name is alice. i’m a songwriter, composer, and artist from
 northern va. i’ve published music under multiple aliases throughout the
 years,</p>
-<p><em>i currently release as - freya langley<em></p>
+<p><em>i currently release as - <span class="glitch">freya
+langley</span></em></p>
 <p>the writings are a lot about what chronic illness is, the aspects of
 grief, into what getting better naturally is. things take time,</p>
-be well<br> xoxo
-</p>
+<p>be well<br> xoxo</p>
 <p>-a.c.</p>
 <p>xoxo</p>
+</div>
 <hr>
-<details open class="details-plain">
+<details open class="details-plain" id="whatami">
 <summary>
 What ‘atimetowait’ means, and a bit more about myself.
 </summary>
-<p>
-<em>‘atimetowait’</em> was originally the name of a project I created
+<div class="home-prose">
+<p><em>‘atimetowait’</em> was originally the name of a project I created
 right after I began chemo-therapy - around 15 or so.<br> <br>The
 sentiment of it being that this all was just, ‘a time to wait’ - so I
 created, wrote, produced thousands of songs, demos, tracks…some of which
@@ -58,11 +86,12 @@ of things like everyone else is. <br><br>I’m quite easy to reach at
 <em>atimetowait@gmail.com</em> as well as - <span class="citation"
 data-cites="atimewaited">@atimewaited</span> on Instagram. <br><br>For
 either commission opportunities, collabs, or someone to chat :) be
-around, <br><br> -alice
-</p>
+around, <br><br> -alice</p>
+</div>
 </details>
 <hr>
   <div class="debug-grid"></div>
   <script src="/src/index.js"></script>
+  <script src="/src/terminal.js"></script>
 </body>
 </html>

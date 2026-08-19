@@ -65,6 +65,8 @@ def main() -> int:
     run_pandoc(ROOT / "demo" / "musings.generated.md", ROOT / "musings" / "index.html")
     run_pandoc(ROOT / "demo" / "bookkeeping.md", ROOT / "bookkeeping" / "index.html")
     run_pandoc(ROOT / "demo" / "sightseeing.md", ROOT / "sightseeing" / "index.html")
+    run_pandoc(ROOT / "demo" / "listen.md", ROOT / "listen" / "index.html")
+    run_pandoc(ROOT / "demo" / "archive.generated.md", ROOT / "archive" / "index.html")
     for entry in journal_entries():
         slug = entry.stem
         run_pandoc(entry, ROOT / "musings" / slug / "index.html", journal=True)

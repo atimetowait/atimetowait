@@ -4,7 +4,27 @@
   <meta charset="utf-8" />
   <meta name="generator" content="pandoc" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <meta name="description" content="Personal site and writing by Alice C. — songwriter, composer, artist. Chronic illness, grief, and getting better naturally." />
   <title>Sightseeing – atimetowait</title>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+
+  <meta property="og:site_name" content="atimetowait" />
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="Sightseeing" />
+  <meta property="og:description" content="freya langley // aCadogan" />
+  <meta property="article:published_time" content="2026-08-19" />
+  <meta name="twitter:card" content="summary" />
+
+  <!-- Apply a saved theme before first paint, so choosing light on a dark OS
+       doesn't flash black first. Mirrors the `theme` terminal command. -->
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("atimetowait:theme");
+        if (t) document.documentElement.setAttribute("data-theme", t);
+      } catch (e) {}
+    })();
+  </script>
   <link rel="stylesheet" href="/src/reset.css" />
   <link rel="stylesheet" href="/src/index.css" />
 </head>
@@ -25,12 +45,15 @@
   <li><a href="/">Home</a></li>
   <li><a href="/musings/">Musings</a></li>
   <li><a href="/sightseeing/">Sightseeing</a></li>
+  <li><a href="/listen/">Listen</a></li>
+  <li><a href="/bookkeeping/">Bookkeeping</a></li>
+  <li><a href="/archive/">Archive</a></li>
 </ul>
 </nav>
 </details>
 <div class="sightseeing-gallery">
 <figure>
-<img src="/SIGHTSEEING/2852d830069151.561253dd2e66e.jpg" alt="Sightseeing photo 1">
+<img src="/sightseeing/2852d830069151.561253dd2e66e.jpg" alt="Sightseeing photo 1">
 <figcaption>
 i took a lot of photos as a kid, photography was the first ‘love’ i had.
 my grandparents got me a dslr when i was 13, visiting.
@@ -38,7 +61,7 @@ my grandparents got me a dslr when i was 13, visiting.
 </figure>
 <br>
 <figure>
-<img src="/SIGHTSEEING/42b65230069151.56519511c8248.jpg" alt="Sightseeing photo 2">
+<img src="/sightseeing/42b65230069151.56519511c8248.jpg" alt="Sightseeing photo 2">
 <figcaption>
 something that stuck with me, was when a family member sat me down to
 tell me… you can never take too many photos off digital cameras.
@@ -47,7 +70,7 @@ tell me… you can never take too many photos off digital cameras.
 </figure>
 <br>
 <figure>
-<img src="/SIGHTSEEING/5541c430069151.56645a9696e95.jpg" alt="Sightseeing photo 3">
+<img src="/sightseeing/5541c430069151.56645a9696e95.jpg" alt="Sightseeing photo 3">
 <figcaption>
 so. i took a lot. <br>while i was healthy as a kid, i took advantage of
 it.
@@ -55,7 +78,7 @@ it.
 </figure>
 <br>
 <figure>
-<img src="/SIGHTSEEING/5fb10d30069151.5613c802bf04f.jpg" alt="Sightseeing photo 4">
+<img src="/sightseeing/5fb10d30069151.5613c802bf04f.jpg" alt="Sightseeing photo 4">
 <figcaption>
 it gave me a reason to enjoy vacations while i had them. things to look
 back on, places i may never see again. faces..too.<br>i’m rather
@@ -65,14 +88,14 @@ any dslr.
 </figure>
 <br>
 <figure>
-<img src="/SIGHTSEEING/cc638e30069151.561253dd34421.jpg" alt="Sightseeing photo 5">
+<img src="/sightseeing/cc638e30069151.561253dd34421.jpg" alt="Sightseeing photo 5">
 <figcaption>
 things stilled, crowds halting
 </figcaption>
 </figure>
 <br>
 <figure>
-<img src="/SIGHTSEEING/fad29c30069151.561253dd29a30.jpg" alt="Sightseeing photo 6">
+<img src="/sightseeing/fad29c30069151.561253dd29a30.jpg" alt="Sightseeing photo 6">
 <figcaption>
 i wonder where these people are today. i hope they are doing well.
 </figcaption>
@@ -80,5 +103,6 @@ i wonder where these people are today. i hope they are doing well.
 </div>
   <div class="debug-grid"></div>
   <script src="/src/index.js"></script>
+  <script src="/src/terminal.js"></script>
 </body>
 </html>

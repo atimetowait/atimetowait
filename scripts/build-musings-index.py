@@ -1,14 +1,37 @@
 #!/usr/bin/env python3
-"""Generate demo/musings.generated.md index from demo/musings/*.md entries."""
+"""Generate the musings index, the archive page, and site-manifest.json.
+
+Everything here is derived from the front matter of demo/musings/*.md, so
+adding an entry means adding one markdown file and nothing else.
+
+Outputs:
+  demo/musings.generated.md  chronological index, grouped by month
+  demo/archive.generated.md  dense filterable table of every entry
+  site-manifest.json         what the footer terminal knows about
+"""
 
 from __future__ import annotations
 
+import html
+import json
 from datetime import datetime
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 ENTRIES_DIR = ROOT / "demo" / "musings"
 OUTPUT = ROOT / "demo" / "musings.generated.md"
+ARCHIVE_OUTPUT = ROOT / "demo" / "archive.generated.md"
+MANIFEST_OUTPUT = ROOT / "site-manifest.json"
+
+# Static (non-journal) sections, for `ls` and `cd` in the terminal.
+SECTIONS = [
+    {"name": "home", "href": "/", "description": "who i am, and what this is"},
+    {"name": "musings", "href": "/musings/", "description": "the writing, newest first"},
+    {"name": "sightseeing", "href": "/sightseeing/", "description": "photographs, mostly from before"},
+    {"name": "listen", "href": "/listen/", "description": "music, under whichever name"},
+    {"name": "bookkeeping", "href": "/bookkeeping/", "description": "a running ledger of small things"},
+    {"name": "archive", "href": "/archive/", "description": "everything at once, out of order"},
+]
 
 MONTHS = [
     "January",
@@ -73,7 +96,9 @@ def load_entries() -> list[dict]:
             {
                 "date": day,
                 "summary": meta.get("summary", slug),
+                "title": meta.get("page-title", meta.get("summary", slug)),
                 "tags": parse_tags(meta.get("tags", "")),
+                "mood": meta.get("mood", "bone"),
                 "href": f"/musings/{slug}/",
                 "slug": slug,
             }
@@ -114,18 +139,19 @@ def render_index(entries: list[dict]) -> str:
             current_month = heading
 
         date_label = entry["date"].strftime("%Y-%m-%d")
-        title = entry["summary"]
+        title = html.escape(entry["summary"])
 
         tag_html = ""
         if entry["tags"]:
             tags = " ".join(
-                f'<span class="journal-tag">{t}</span>'
+                f'<span class="journal-tag">{html.escape(t)}</span>'
                 for t in entry["tags"]
             )
             tag_html = f" · {tags}"
 
         lines.append(
-            f'<li><span class="journal-date">{date_label}</span> · '
+            f'<li data-mood="{html.escape(entry["mood"])}">'
+            f'<span class="journal-date">{date_label}</span> · '
             f'<a href="{entry["href"]}">{title}</a>{tag_html}</li>'
         )
 
@@ -138,10 +164,113 @@ def render_index(entries: list[dict]) -> str:
     return "\n".join(lines)
 
 
+def render_archive(entries: list[dict]) -> str:
+    """Everything at once, out of order -- filterable by tag and by text."""
+    all_tags = sorted({t for e in entries for t in e["tags"]})
+
+    lines = [
+        "---",
+        "title: atimetowait",
+        "subtitle: freya langley // aCadogan",
+        "lang: en",
+        "toc-title: Site Guide",
+        "page-title: Archive",
+        "---",
+        "",
+        '<div class="archive">',
+        '<p class="archive-intro">Everything, out of order. '
+        f"{len(entries)} entries spanning "
+        f"{min(e['date'].year for e in entries)}–{max(e['date'].year for e in entries)}.</p>",
+        "",
+        '<div class="archive-controls">',
+        '<label class="archive-search-label" for="archive-search">search</label>',
+        '<input type="search" id="archive-search" class="archive-search" '
+        'placeholder="type to filter..." autocomplete="off">',
+        '<div class="archive-tags" role="group" aria-label="Filter by tag">',
+        '<button type="button" class="archive-tag is-active" data-tag="">all</button>',
+    ]
+
+    for tag in all_tags:
+        lines.append(
+            f'<button type="button" class="archive-tag" data-tag="{html.escape(tag)}">'
+            f"{html.escape(tag)}</button>"
+        )
+
+    lines += [
+        "</div>",
+        "</div>",
+        "",
+        '<p class="archive-count" role="status" aria-live="polite"></p>',
+        "",
+        '<ul class="archive-list">',
+    ]
+
+    for entry in entries:
+        date_label = entry["date"].strftime("%Y-%m-%d")
+        haystack = " ".join(
+            [entry["summary"], entry["title"], entry["slug"], *entry["tags"]]
+        ).lower()
+
+        tag_html = "".join(
+            f'<span class="journal-tag">{html.escape(t)}</span>' for t in entry["tags"]
+        )
+
+        lines.append(
+            f'<li class="archive-row" data-mood="{html.escape(entry["mood"])}" '
+            f'data-tags="{html.escape("|".join(entry["tags"]))}" '
+            f'data-search="{html.escape(haystack)}">'
+            f'<span class="archive-date">{date_label}</span>'
+            f'<span class="archive-title"><a href="{entry["href"]}">'
+            f'{html.escape(entry["summary"])}</a></span>'
+            f'<span class="archive-meta">{tag_html}</span>'
+            f"</li>"
+        )
+
+    lines += [
+        "</ul>",
+        '<p class="archive-empty" hidden>nothing here matches that.</p>',
+        "</div>",
+        "",
+    ]
+
+    return "\n".join(lines)
+
+
+def render_manifest(entries: list[dict]) -> str:
+    """What the footer terminal knows about."""
+    return json.dumps(
+        {
+            "generated": datetime.now().strftime("%Y-%m-%d"),
+            "sections": SECTIONS,
+            "entries": [
+                {
+                    "slug": e["slug"],
+                    "title": e["title"],
+                    "summary": e["summary"],
+                    "date": e["date"].strftime("%Y-%m-%d"),
+                    "tags": e["tags"],
+                    "mood": e["mood"],
+                    "href": e["href"],
+                }
+                for e in entries
+            ],
+        },
+        indent=2,
+    ) + "\n"
+
+
 def main() -> None:
     entries = load_entries()
+
     OUTPUT.write_text(render_index(entries), encoding="utf-8")
     print(f"Wrote {OUTPUT} ({len(entries)} entries)")
+
+    if entries:
+        ARCHIVE_OUTPUT.write_text(render_archive(entries), encoding="utf-8")
+        print(f"Wrote {ARCHIVE_OUTPUT}")
+
+    MANIFEST_OUTPUT.write_text(render_manifest(entries), encoding="utf-8")
+    print(f"Wrote {MANIFEST_OUTPUT}")
 
 
 if __name__ == "__main__":

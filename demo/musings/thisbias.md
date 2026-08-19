@@ -7,6 +7,7 @@ page-title: "nulled"
 date: 2076-2-14
 summary: "this bias is beginning to show"
 tags: [NULLED]
+mood: ember
 journal-entry: true
 from: markdown+hard_line_breaks
 ---

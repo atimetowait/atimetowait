@@ -10,18 +10,26 @@ JOURNAL_PANDOC=$(PANDOC) -f markdown+hard_line_breaks
 HTML_PAGES=index.html \
 	musings/index.html \
 	bookkeeping/index.html \
-	sightseeing/index.html
+	sightseeing/index.html \
+	listen/index.html \
+	archive/index.html
 
 JOURNAL_ENTRIES=$(filter-out demo/musings/_%.md,$(wildcard demo/musings/*.md))
 JOURNAL_HTML=$(patsubst demo/musings/%.md,musings/%/index.html,$(JOURNAL_ENTRIES))
 
 all: $(HTML_PAGES) $(JOURNAL_HTML)
 
+# Remove only generated files. NEVER `rm -rf sightseeing` -- the photographs
+# live in that directory alongside the generated index.html and are not
+# reproducible from source.
 clean:
-	rm -f index.html demo/musings.generated.md
-	rm -rf musings sightseeing bookkeeping
+	rm -f index.html demo/musings.generated.md demo/archive.generated.md site-manifest.json
+	rm -f sightseeing/index.html
+	rm -rf musings bookkeeping listen archive
 
-demo/musings.generated.md: $(JOURNAL_ENTRIES) scripts/build-musings-index.py
+# One script produces the musings index, the archive page and the terminal's
+# manifest; they share the same front-matter parse.
+demo/musings.generated.md demo/archive.generated.md site-manifest.json &: $(JOURNAL_ENTRIES) scripts/build-musings-index.py
 	python3 scripts/build-musings-index.py
 
 index.html: demo/index.md demo/template.html Makefile
@@ -39,6 +47,14 @@ sightseeing/index.html: demo/sightseeing.md demo/template.html Makefile
 	mkdir -p sightseeing
 	$(PANDOC) -i demo/sightseeing.md -o $@
 
+listen/index.html: demo/listen.md demo/template.html Makefile
+	mkdir -p listen
+	$(PANDOC) -i demo/listen.md -o $@
+
+archive/index.html: demo/archive.generated.md demo/template.html Makefile
+	mkdir -p archive
+	$(PANDOC) -i demo/archive.generated.md -o $@
+
 musings/%/index.html: demo/musings/%.md demo/template.html Makefile
 	mkdir -p musings/$*
 	$(JOURNAL_PANDOC) -i demo/musings/$*.md -o $@
@@ -47,7 +63,7 @@ serve: all
 	live-server --open=/ --host=127.0.0.1 .
 
 watch:
-	printf '%s\n' demo/index.md demo/bookkeeping.md demo/sightseeing.md demo/template.html demo/musings.generated.md Makefile scripts/build-musings-index.py | entr -n make
+	printf '%s\n' demo/index.md demo/bookkeeping.md demo/sightseeing.md demo/listen.md demo/template.html demo/musings.generated.md demo/archive.generated.md Makefile scripts/build-musings-index.py | entr -n make
 	find demo/musings -name '*.md' -print 2>/dev/null | entr -n make
 
 .PHONY: all clean serve watch

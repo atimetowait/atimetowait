@@ -25,13 +25,84 @@
   font-size: 16px;
 }
 
+/**
+ * MOOD PALETTES
+ *
+ * Each entry may declare `mood: <name>` in its front matter, which lands on
+ * <html data-mood="..."> and tints the page.
+ *
+ * Every mood defines exactly two raw values -- --accent-l (light theme) and
+ * --accent-d (dark theme) -- so no colour is ever defined only inside a media
+ * query. The theme layer below picks which one becomes --accent; everything
+ * else derives from it via color-mix.
+ *
+ * Default ("bone") sets accent to the text colour, so an entry with no mood
+ * renders exactly as it did before.
+ **/
+:root {
+  --accent-l: #000;
+  --accent-d: #fff;
+}
+
+/* Defined on bare [data-mood] rather than :root[data-mood] so the same palette
+   works on <html> (a whole entry) and on a single <li> (one row of the index). */
+
+/* violet / oxblood -- stuff you don't really say out loud */
+[data-mood="bruise"] { --accent-l: #7a2e52; --accent-d: #d081ad; }
+
+/* chroma bleed -- insync.avi */
+[data-mood="vhs"]    { --accent-l: #087b8a; --accent-d: #46d9e6; }
+
+/* ash and embers -- rapture, the garden burning */
+[data-mood="ember"]  { --accent-l: #a33b0a; --accent-d: #ff8a4c; }
+
+/* degraded warm -- anything dated 1999 */
+[data-mood="amber"]  { --accent-l: #8a5a12; --accent-d: #e0b562; }
+
+/* clinical, cold */
+[data-mood="iodine"] { --accent-l: #4a3f8f; --accent-d: #9b8fe0; }
+
+/* "bone" is the explicit name for the default black/white. */
+[data-mood="bone"]   { --accent-l: #000; --accent-d: #fff; }
+
+/**
+ * THEME RESOLUTION
+ *
+ * Light is the base. Dark applies when the OS asks for it and the reader
+ * hasn't explicitly chosen light, or when the reader has explicitly chosen
+ * dark (via the terminal's `theme` command, which sets data-theme on <html>).
+ **/
+:root {
+  --accent: var(--accent-l);
+}
+
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not([data-theme="light"]) {
     --text-color: #fff;
     --text-color-alt: #aaa;
     --background-color: #000;
     --background-color-alt: #111;
+    --accent: var(--accent-d);
   }
+}
+
+:root[data-theme="dark"] {
+  --text-color: #fff;
+  --text-color-alt: #aaa;
+  --background-color: #000;
+  --background-color-alt: #111;
+  --accent: var(--accent-d);
+}
+
+/* Derived accent tokens. Defined after --accent is resolved so they follow it. */
+:root {
+  --accent-dim: color-mix(in srgb, var(--accent) 45%, var(--background-color));
+  --bg-tint: color-mix(in srgb, var(--accent) 3%, var(--background-color));
+}
+
+::selection {
+  background: var(--accent);
+  color: var(--background-color);
 }
 
 * {
@@ -59,7 +130,9 @@ html {
   padding: 0;
   flex-direction: column;
   align-items: center;
-  background: var(--background-color);
+  /* --bg-tint is the page colour washed a few percent toward the entry's
+     mood. On a moodless page it resolves to plain --background-color. */
+  background: var(--bg-tint);
   color: var(--text-color);
 }
 
@@ -107,7 +180,7 @@ hr:after {
   top: calc(var(--line-height) / 2 - var(--border-thickness));
   left: 0;
   width: 100%;
-  border-top: calc(var(--border-thickness) * 3) double var(--text-color);
+  border-top: calc(var(--border-thickness) * 3) double var(--accent);
   height: 0;
 }
 
@@ -117,6 +190,11 @@ a {
 
 a:link, a:visited {
   color: var(--text-color);
+}
+
+a:hover, a:focus-visible {
+  color: var(--accent);
+  text-decoration-color: var(--accent);
 }
 
 p {
@@ -362,6 +440,20 @@ details.details-plain > :not(summary) {
 }
 .journal-tag {
   color: var(--text-color-alt);
+}
+
+/* In the index each entry carries its own mood, so the tag shows that entry's
+   colour rather than the page's. */
+.journal-index li[data-mood] .journal-tag {
+  color: var(--accent-l);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .journal-index li[data-mood] .journal-tag {
+    color: var(--accent-d);
+  }
+}
+:root[data-theme="dark"] .journal-index li[data-mood] .journal-tag {
+  color: var(--accent-d);
 }
 .journal-back {
   margin-top: calc(var(--line-height) * 2);
@@ -689,4 +781,346 @@ label input {
 
 .debug-toggle-label {
   text-align: right;
+}
+
+/* ============================================================
+   THE FOOTER TERMINAL
+   Built by src/terminal.js; absent entirely without JS.
+   ============================================================ */
+
+.tty {
+  display: block;
+  width: 100%;
+  max-width: 80ch;
+  margin: calc(var(--line-height) * 3) auto calc(var(--line-height) * 2);
+  padding-top: var(--line-height);
+  border-top: var(--border-thickness) solid var(--text-color-alt);
+  font-size: 0.875rem;
+  line-height: var(--line-height);
+  cursor: text;
+}
+
+.tty-label {
+  color: var(--text-color-alt);
+  text-align: center;
+  margin-bottom: var(--line-height);
+  font-style: italic;
+}
+
+.tty-out {
+  max-height: calc(var(--line-height) * 16);
+  overflow-y: auto;
+  overflow-x: auto;
+  margin-bottom: calc(var(--line-height) * 0.5);
+  white-space: pre;
+}
+
+.tty-line {
+  line-height: var(--line-height);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.tty-dim    { color: var(--text-color-alt); }
+.tty-strong { color: var(--accent); font-weight: var(--font-weight-medium); }
+.tty-echo   { color: var(--text-color-alt); }
+
+.tty-prompt-row {
+  display: flex;
+  align-items: baseline;
+  gap: 1ch;
+}
+
+.tty-prompt {
+  color: var(--accent);
+  font-weight: var(--font-weight-medium);
+  flex: 0 0 auto;
+  user-select: none;
+}
+
+/* Deliberately not the boxed input from the form styles above -- inside a
+   terminal a border reads as a text field, which is the wrong affordance. */
+.tty-input {
+  flex: 1 1 auto;
+  width: auto;
+  min-width: 0;
+  height: var(--line-height);
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: var(--text-color);
+  font: inherit;
+  caret-color: var(--accent);
+}
+
+.tty-input:focus {
+  outline: none;
+  --border-thickness: 2px;
+}
+
+/* The cursor only blinks while the input is idle and focused. */
+.tty-prompt-row:focus-within .tty-prompt::after {
+  content: "";
+  display: inline-block;
+  width: 0;
+}
+
+@media (max-width: 60ch) {
+  .tty-out { max-height: calc(var(--line-height) * 12); }
+}
+
+/* ============================================================
+   TEXT THAT MISBEHAVES
+   ============================================================ */
+
+/* Author-marked in the source as [some words]{.glitch} */
+.glitch {
+  color: var(--accent);
+  cursor: crosshair;
+}
+
+/**
+ * Line reveal. Lines are visible by default and only hidden once JS has
+ * confirmed it can reveal them again (.reveal-armed), so a failure mid-script
+ * can never leave text permanently invisible.
+ */
+.journal-entry.reveal-armed .line {
+  opacity: 0;
+  transform: translateY(calc(var(--line-height) * 0.25));
+  transition: opacity 600ms ease-out, transform 600ms ease-out;
+}
+
+.journal-entry.reveal-armed .line.is-visible {
+  opacity: 1;
+  transform: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .journal-entry.reveal-armed .line {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+}
+
+/* ============================================================
+   ARCHIVE
+   ============================================================ */
+
+.archive-intro {
+  color: var(--text-color-alt);
+  margin-bottom: var(--line-height);
+}
+
+.archive-controls {
+  margin-bottom: var(--line-height);
+}
+
+.archive-search-label {
+  color: var(--text-color-alt);
+  font-weight: var(--font-weight-normal);
+  margin-bottom: calc(var(--line-height) * 0.25);
+}
+
+.archive-search {
+  margin-bottom: var(--line-height);
+}
+
+.archive-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1ch;
+}
+
+.archive-tag {
+  height: calc(var(--line-height) * 1.5);
+  padding: 0 1ch;
+  text-transform: none;
+  font-size: 0.875rem;
+  border-color: var(--text-color-alt);
+  color: var(--text-color-alt);
+}
+
+.archive-tag:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: var(--background-color-alt);
+}
+
+.archive-tag.is-active {
+  border-color: var(--text-color);
+  color: var(--background-color);
+  background: var(--text-color);
+}
+
+.archive-count {
+  color: var(--text-color-alt);
+  margin-bottom: calc(var(--line-height) * 0.5);
+}
+
+.archive-list {
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+}
+
+.archive-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 2ch;
+  align-items: baseline;
+  line-height: var(--line-height);
+  padding: calc(var(--line-height) * 0.25) 0;
+  border-bottom: 1px solid var(--background-color-alt);
+}
+
+.archive-row[hidden] {
+  display: none;
+}
+
+/* Each row carries its entry's mood, so the archive reads as a colour index. */
+.archive-row .archive-date {
+  flex: 0 0 auto;
+  font-variant-numeric: tabular-nums;
+  color: var(--accent);
+}
+
+.archive-row .archive-title {
+  flex: 1 1 24ch;
+}
+
+.archive-row .archive-meta {
+  flex: 0 0 auto;
+  color: var(--text-color-alt);
+  font-size: 0.875rem;
+}
+
+.archive-empty {
+  color: var(--text-color-alt);
+  font-style: italic;
+  margin-top: var(--line-height);
+}
+
+/* ============================================================
+   LISTEN
+   ============================================================ */
+
+.release {
+  margin-bottom: calc(var(--line-height) * 2);
+}
+
+.release-title {
+  font-weight: var(--font-weight-bold);
+}
+
+.release-meta {
+  color: var(--text-color-alt);
+}
+
+/* An ASCII-ish waveform drawn from the grid tokens -- no images. */
+.waveform {
+  display: flex;
+  align-items: center;
+  gap: 1px;
+  height: calc(var(--line-height) * 2);
+  margin: var(--line-height) 0;
+  overflow: hidden;
+}
+
+.waveform span {
+  flex: 1 1 auto;
+  background: var(--accent);
+  opacity: 0.55;
+  min-height: 2px;
+}
+
+/* ------------------------------------------------------------
+   The homepage terminal.
+   Same machine as the footer one, given the room to be the front
+   door. Declared after .tty so it wins at equal specificity.
+   ------------------------------------------------------------ */
+
+.tty-hero {
+  margin: 0 0 calc(var(--line-height) * 2);
+  padding: var(--line-height) 1ch;
+  border: var(--border-thickness) solid var(--text-color);
+  border-top: var(--border-thickness) solid var(--text-color);
+  font-size: 0.9375rem;
+  background: var(--background-color);
+}
+
+/* The boot output is the homepage's content, so let it show in full rather
+   than scrolling inside a short window. */
+.tty-hero .tty-out {
+  max-height: calc(var(--line-height) * 30);
+  margin-bottom: var(--line-height);
+}
+
+.tty-hero .tty-prompt-row {
+  padding-top: calc(var(--line-height) * 0.5);
+  border-top: 1px solid var(--background-color-alt);
+}
+
+/* A block cursor that rests after the prompt until the reader types. */
+.tty-hero .tty-input {
+  caret-shape: block;
+}
+
+@media (max-width: 60ch) {
+  .tty-hero {
+    padding: calc(var(--line-height) * 0.75) 1ch;
+    font-size: 0.875rem;
+  }
+  .tty-hero .tty-out {
+    max-height: calc(var(--line-height) * 22);
+  }
+}
+
+/* ------------------------------------------------------------
+   Prose inside the terminal (`home`, `whatami`).
+   The surrounding output is fixed-column terminal text; this is
+   the one place that breathes, so it gets a measure, a gutter
+   rule and real paragraph spacing instead of more chrome.
+   ------------------------------------------------------------ */
+
+.tty-prose {
+  /* .tty-out sets white-space: pre for command output; prose must wrap. */
+  white-space: normal;
+  max-width: 62ch;
+  margin: calc(var(--line-height) * 0.5) 0 var(--line-height);
+  padding-left: 2ch;
+  border-left: var(--border-thickness) solid var(--accent);
+  color: var(--text-color);
+}
+
+.tty-prose p {
+  line-height: var(--line-height);
+  margin: 0;
+}
+
+.tty-prose p + p {
+  margin-top: calc(var(--line-height) * 0.75);
+}
+
+/* Her sign-offs sit alone on a line; let them settle rather than read as
+   another paragraph of body text. */
+.tty-prose p:last-child {
+  color: var(--text-color-alt);
+}
+
+.tty-prose em {
+  font-style: italic;
+}
+
+.tty-prose a {
+  color: var(--accent);
+}
+
+/* The homepage keeps its prose in the HTML for readers without JS. Once the
+   terminal has booted it serves that text on request instead, so the static
+   copies -- and the rules that separated them -- step aside. */
+.home-terminal #intro,
+.home-terminal #whatami,
+.home-terminal > hr {
+  display: none;
 }
