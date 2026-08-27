@@ -9,7 +9,7 @@ page-title: Musings
 <nav class="journal-index" role="navigation">
 <h2>February 2076</h2>
 <ul>
-<li data-mood="ember"><span class="journal-date">2076-02-14</span> · <a href="/musings/thisbias/">this bias is beginning to show</a> · <span class="journal-tag">NULLED</span></li>
+<li data-mood="bone"><span class="journal-date">2076-02-14</span> · <a href="/musings/thisbias/">this bias is beginning to show</a> · <span class="journal-tag">NULLED</span></li>
 </ul>
 <h2>July 2026</h2>
 <ul>
@@ -17,7 +17,7 @@ page-title: Musings
 </ul>
 <h2>June 2026</h2>
 <ul>
-<li data-mood="bruise"><span class="journal-date">2026-06-27</span> · <a href="/musings/icymi/">icymi</a> · <span class="journal-tag">stuff you don&#x27;t really say out loud</span></li>
+<li data-mood="bone"><span class="journal-date">2026-06-27</span> · <a href="/musings/icymi/">icymi</a> · <span class="journal-tag">stuff you don&#x27;t really say out loud</span></li>
 </ul>
 <h2>November 1999</h2>
 <ul>

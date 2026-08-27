@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Turn the ASCII art in demo/header-art.txt into markup the homepage can animate.
+"""Turn a plain-text ASCII drawing into markup a page can animate.
 
 The art used to ship as a flat JPEG, which meant it could not react to anything --
 a raster has no characters to address. Emitting it as real text gives src/header-art.js
@@ -9,19 +9,29 @@ Each character becomes its own <span>, carrying a tone tier derived from how muc
 that glyph actually puts on the page in JetBrains Mono (the face the art is displayed
 in). That keeps the image's tonal structure while letting JS repaint any cell.
 
-Output:
-  demo/header-art.generated.html  a <pre> of ROWS row spans, each of COLS char spans
+Originally hardcoded to the homepage's demo/header-art.txt. It now takes --source and
+--output so any page can supply its own drawing under demo/art/ -- the wrapper class is
+also configurable (--class) so the same script can produce the homepage's full-bleed
+hero markup and the other pages' faint backdrop markup, while the inner <pre class=
+"header-art"> stays fixed so header-art.js keeps finding it without any changes.
+
+Output: a <div class="header-art-wrap"> (or --class) wrapping a <pre> of ROWS row
+spans, each of COLS char spans, carrying the grid's dimensions as CSS custom properties
+so the stylesheet is not stuck assuming one fixed size.
 """
 
 from __future__ import annotations
 
+import argparse
 import html
 import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
-SOURCE = ROOT / "demo" / "header-art.txt"
-OUTPUT = ROOT / "demo" / "header-art.generated.html"
+DEFAULT_SOURCE = ROOT / "demo" / "header-art.txt"
+DEFAULT_OUTPUT = ROOT / "demo" / "header-art.generated.html"
+DEFAULT_DESCRIPTION = "ASCII art portrait rendered in monospace characters."
+DEFAULT_CLASS = "header-art-wrap"
 
 FONT_PATH = "/usr/share/fonts/TTF/JetBrainsMono-Regular.ttf"
 
@@ -29,25 +39,45 @@ FONT_PATH = "/usr/share/fonts/TTF/JetBrainsMono-Regular.ttf"
 # in step if this changes.
 TONE_TIERS = 8
 
-# Screen readers get the description, not ten thousand punctuation marks.
-DESCRIPTION = "ASCII art portrait rendered in monospace characters."
+
+def parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument(
+        "--source", type=Path, default=DEFAULT_SOURCE, help="plain-text art file to read"
+    )
+    parser.add_argument(
+        "--output", type=Path, default=DEFAULT_OUTPUT, help="generated HTML fragment to write"
+    )
+    parser.add_argument(
+        "--description",
+        default=DEFAULT_DESCRIPTION,
+        help="alt text for screen readers (the <pre> itself is aria-hidden)",
+    )
+    parser.add_argument(
+        "--class",
+        dest="wrapper_class",
+        default=DEFAULT_CLASS,
+        help="class on the outer wrapping <div> -- header-art-wrap for a full-bleed "
+        "hero, art-backdrop for the faint backdrop mode used on other pages",
+    )
+    return parser.parse_args()
 
 
-def load_rows() -> list[str]:
+def load_rows(source: Path) -> list[str]:
     """Read the art, drop trailing blank lines, and pad every row to a rectangle.
 
     The renderer indexes cells as row * cols + col, so a ragged grid would silently
     misalign every row after the first short one.
     """
-    if not SOURCE.exists():
-        sys.exit(f"missing {SOURCE.relative_to(ROOT)}")
+    if not source.exists():
+        sys.exit(f"missing {source}")
 
-    text = SOURCE.read_text(encoding="utf-8")
+    text = source.read_text(encoding="utf-8")
     rows = text.split("\n")
     while rows and not rows[-1].strip():
         rows.pop()
     if not rows:
-        sys.exit(f"{SOURCE.relative_to(ROOT)} is empty")
+        sys.exit(f"{source} is empty")
 
     width = max(len(row) for row in rows)
     return [row.ljust(width) for row in rows]
@@ -91,7 +121,7 @@ def tier_of(weight: float) -> int:
     return min(TONE_TIERS - 1, int(weight * TONE_TIERS))
 
 
-def build(rows: list[str]) -> str:
+def build(rows: list[str], description: str, wrapper_class: str) -> str:
     weights = ink_weights(set("".join(rows)))
 
     row_markup = []
@@ -107,19 +137,25 @@ def build(rows: list[str]) -> str:
     # correctly even if the stylesheet never loads.
     art = "\n".join(row_markup)
 
+    cols = len(rows[0])
+    rows_n = len(rows)
+
     return (
-        '<div class="header-art-wrap">\n'
-        f'<p class="visually-hidden">{html.escape(DESCRIPTION)}</p>\n'
-        f'<pre class="header-art" aria-hidden="true">{art}</pre>\n'
+        f'<div class="{html.escape(wrapper_class)}">\n'
+        f'<p class="visually-hidden">{html.escape(description)}</p>\n'
+        f'<pre class="header-art" aria-hidden="true" '
+        f'style="--art-cols:{cols}; --art-rows:{rows_n}">{art}</pre>\n'
         '</div>\n'
     )
 
 
 def main() -> None:
-    rows = load_rows()
-    OUTPUT.write_text(build(rows), encoding="utf-8")
+    args = parse_args()
+    rows = load_rows(args.source)
+    args.output.parent.mkdir(parents=True, exist_ok=True)
+    args.output.write_text(build(rows, args.description, args.wrapper_class), encoding="utf-8")
     print(
-        f"wrote {OUTPUT.relative_to(ROOT)} "
+        f"wrote {args.output} "
         f"({len(rows)} rows x {len(rows[0])} cols = {len(rows) * len(rows[0])} cells)"
     )
 

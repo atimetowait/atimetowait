@@ -23,4 +23,11 @@ To make a phrase come apart under the cursor, wrap it like this:
 `mood:` above tints the whole page. One of: bone (plain black/white), bruise,
 vhs, ember, amber, iodine. Leave it as bone if the entry doesn't want a colour.
 
+Lines fade in on scroll by default. Add `no-reveal: true` above to have the
+whole entry's text load in at once instead.
+
+To give this entry its own backdrop art, drop a plain-text drawing at
+demo/art/<slug>.txt (this file's own name, minus .md) and rebuild -- no other
+wiring needed. See demo/art/README.md for the shape it should take.
+
 <hr>

@@ -135,6 +135,17 @@ html {
      mood. On a moodless page it resolves to plain --background-color. */
   background: var(--bg-tint);
   color: var(--text-color);
+  /* Eases wheel/keyboard scrolling toward its target instead of snapping
+     frame-to-frame -- easier on the eyes over a long entry. Reduced motion
+     turns it back off below: this is the one browsers apply to ordinary
+     scrolling, not just anchor jumps, so it's squarely motion to opt out of. */
+  scroll-behavior: smooth;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
 }
 
 body {
@@ -386,19 +397,24 @@ th {
   /**
    * Cover, capped.
    *
-   *   --art-fit    fills the width  (220 cols x 0.6em advance = 132)
-   *   --art-cover  fills the height (47 rows x 1.2 line-height = 56.4)
+   *   --art-cols / --art-rows  the grid's own dimensions, written inline by
+   *                            build-header-art.py so this isn't tied to one
+   *                            piece of art's size (defaults are the homepage
+   *                            portrait's 220x47, for any art predating this).
+   *   --art-fit    fills the width  (cols x 0.6em advance)
+   *   --art-cover  fills the height (rows x 1.2 line-height)
    *
    * max() of the two is a cover fit, so the art fills the screen in both axes
-   * and crops horizontally -- about 12% a side on 16:9.
+   * and crops horizontally -- about 12% a side on 16:9 at the homepage's own
+   * 2.34:1.
    *
-   * The cap matters: the art is 2.34:1, so on a portrait phone a true cover
-   * would scale to ~15px and show only the middle fifth of the image. Clamping
-   * how far it may outgrow the width keeps the crop sane, and the portrait rule
-   * further down takes over from there.
+   * The cap matters: a wide, short piece of art on a portrait phone would
+   * otherwise cover-scale down to a sliver and show only its middle fifth.
+   * Clamping how far it may outgrow the width keeps the crop sane, and the
+   * portrait rule further down takes over from there.
    */
-  --art-fit: calc(100vw / 132);
-  --art-cover: calc(100dvh / 56.4);
+  --art-fit: calc(100vw / (var(--art-cols, 220) * 0.6));
+  --art-cover: calc(100dvh / (var(--art-rows, 47) * 1.2));
   --art-cap: calc(var(--art-fit) * 1.6);
   font-size: min(max(var(--art-fit), var(--art-cover)), var(--art-cap));
   /* Unitless on purpose: the global --line-height is absolute and would not
@@ -414,6 +430,14 @@ th {
   user-select: none;
   pointer-events: none;
   -webkit-user-drag: none;
+}
+
+/* The terminal's `art off` command (and its pre-paint mirror in the template's
+   inline script) sets this on <html>. One switch for both the homepage's
+   full-bleed portrait and every page's backdrop, rather than two. */
+[data-art="off"] .header-art-wrap,
+[data-art="off"] .art-backdrop {
+  display: none;
 }
 
 /**
@@ -719,6 +743,41 @@ details.details-plain > :not(summary) {
 
 .journal-entry > * + * {
   margin-top: var(--line-height);
+}
+
+/* Entries previously carried no visible identity of their own beyond the
+   page's data-mood -- no title, date or tag in the body at all. This reuses
+   .journal-date/.journal-tag from the index (including its site-wide red
+   blink, src/index.css ~1334) rather than inventing new classes for the
+   same idea. */
+.journal-entry-header {
+  margin-bottom: calc(var(--line-height) * 2);
+}
+
+.journal-entry-title {
+  /* Smaller than the site's own masthead h1, and left in the entry's own
+     case rather than forced uppercase like the wayfinding h2s -- this is the
+     author's own words, not site chrome. */
+  font-size: 1.75rem;
+  line-height: calc(1.5 * var(--line-height));
+  text-transform: none;
+  margin-top: 0;
+  margin-bottom: calc(var(--line-height) * 0.5);
+}
+
+.journal-entry-meta {
+  margin: 0;
+  line-height: var(--line-height);
+  color: var(--text-color-alt);
+  font-size: 0.875rem;
+}
+
+/* A single resolved mood for the whole page here, unlike the index (which
+   mixes many entries' moods on one page and so needs the --accent-l/-d
+   split to tint each row independently of the page's own theme). */
+.journal-entry-meta .journal-date {
+  font-variant-numeric: tabular-nums lining-nums;
+  color: var(--accent);
 }
 
 .journal-index {
@@ -1044,12 +1103,27 @@ label input {
 .grid:has(> :last-child:nth-child(8)) { --grid-cells: 8; }
 .grid:has(> :last-child:nth-child(9)) { --grid-cells: 9; }
 
+/* A contact sheet: one column of frames, each numbered, spaced by flex gap
+   rather than the manual <br> tags the markdown uses between figures (kept
+   there so the gallery still reads sensibly with the stylesheet off; hidden
+   here now that gap does the spacing instead). */
+.sightseeing-gallery {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: calc(var(--line-height) * 2);
+  counter-reset: frame;
+}
+.sightseeing-gallery br {
+  display: none;
+}
 .sightseeing-gallery img {
   display: block;
   width: 100%;
   height: auto;
 }
 .sightseeing-gallery figure {
+  counter-increment: frame;
   margin: 0;
   flex: 0 0 auto;
   max-width: 70ch;
@@ -1060,6 +1134,10 @@ label input {
   font-size: 0.85rem;
   color: var(--text-color-alt);
   text-align: center;
+}
+.sightseeing-gallery figcaption::before {
+  content: "frame " counter(frame, decimal-leading-zero) " — ";
+  color: var(--accent);
 }
 
 /* DEBUG UTILITIES */
@@ -1085,6 +1163,96 @@ label input {
 
 .debug-toggle-label {
   text-align: right;
+}
+
+/* ============================================================
+   PER-PAGE ART BACKDROP
+
+   The homepage's ASCII portrait can afford to fill the screen because the
+   terminal IS the page. Everywhere else the page is prose someone is trying
+   to read, so art supplied for these pages (demo/art/*.txt) is instead a
+   faint, fixed backdrop -- reusing the same <pre class="header-art"> markup
+   and the same JS (colour, twinkle, blink, melt) via a different wrapper.
+
+   Readability was measured, not eyeballed: over white, a uniform wash caps
+   out around 10% opacity before --text-color-alt (the tags/captions/counts
+   colour) drops below 4.5:1 contrast -- too faint to read as art. So this
+   doesn't wash evenly. body is 80ch and centred, which leaves wide empty
+   margins on anything wider than that: the mask below clears the reading
+   column almost entirely and lets the art run bold in the margins either
+   side, where there is no text to fight.
+   ============================================================ */
+
+.art-backdrop {
+  position: fixed;
+  inset: 0;
+  /* Negative, not 0: a positioned descendant at z-index 0 paints ABOVE
+     ordinary in-flow content (stacking order puts non-positioned in-flow
+     boxes before zero/positioned ones), so 0 would sit the art on top of the
+     page. Negative drops it behind, the same trick .debug-grid already uses. */
+  z-index: -1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  pointer-events: none;
+  opacity: 0.22;
+
+  /* --clear is a half-width, so the cleared band is 2x it -- wider than
+     body's 80ch/2 = 40ch, so the column itself is never in the fully-clear
+     zone, only ever fading through the feather at its very edges. */
+  --clear: 42ch;
+  --feather: 8ch;
+  -webkit-mask-image: linear-gradient(
+    to right,
+    #000 0,
+    #000 calc(50% - var(--clear) - var(--feather)),
+    rgba(0, 0, 0, 0.15) calc(50% - var(--clear)),
+    rgba(0, 0, 0, 0.15) calc(50% + var(--clear)),
+    #000 calc(50% + var(--clear) + var(--feather)),
+    #000 100%
+  );
+  mask-image: linear-gradient(
+    to right,
+    #000 0,
+    #000 calc(50% - var(--clear) - var(--feather)),
+    rgba(0, 0, 0, 0.15) calc(50% - var(--clear)),
+    rgba(0, 0, 0, 0.15) calc(50% + var(--clear)),
+    #000 calc(50% + var(--clear) + var(--feather)),
+    #000 100%
+  );
+}
+
+/* Dark theme has more contrast headroom to spend (see the table above), so it
+   can run brighter without threatening --text-color-alt's 4.5:1. Following
+   the sheet's own rule: never define a colour only inside a media query --
+   the light value lives on bare :root, and this is a second explicit
+   assignment for the dark case, not the only one. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .art-backdrop {
+    opacity: 0.26;
+  }
+}
+:root[data-theme="dark"] .art-backdrop {
+  opacity: 0.26;
+}
+
+/* Accessibility floor, same precedent as .tty-hero's halo: a reader who has
+   asked for more contrast or less transparency gets the plain page, not art
+   bleeding through it. */
+@media (prefers-contrast: more), (prefers-reduced-transparency: reduce) {
+  .art-backdrop {
+    display: none;
+  }
+}
+
+/* Narrow viewports have no margin for the art to live in -- the mask's clear
+   band would swallow the whole screen anyway, so hide the layer outright
+   rather than pay for a backdrop nobody can see. */
+@media (max-width: 90ch) {
+  .art-backdrop {
+    display: none;
+  }
 }
 
 /* ============================================================
@@ -1167,6 +1335,34 @@ label input {
   content: "";
   display: inline-block;
   width: 0;
+}
+
+/* Standing invitation to type: a blinking block cursor that sits after the
+   input until it's focused, so the terminal reads as ready even before
+   autofocus reaches it (or on touch, where it never does). The real caret
+   takes over the moment focus lands. */
+.tty-caret {
+  display: inline-block;
+  width: 0.6ch;
+  height: 1em;
+  margin-left: 1px;
+  background: var(--accent);
+  animation: tty-caret-blink 1s steps(1, jump-none) infinite;
+}
+
+.tty-prompt-row.tty-engaged .tty-caret {
+  display: none;
+}
+
+@keyframes tty-caret-blink {
+  0%, 49% { opacity: 1; }
+  50%, 100% { opacity: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tty-caret {
+    animation: none;
+  }
 }
 
 @media (max-width: 60ch) {
@@ -1380,6 +1576,85 @@ label input {
   min-height: 2px;
 }
 
+/* ============================================================
+   BOOKKEEPING
+   ============================================================ */
+
+/* The "currently" block is five soft rows of prose, not data -- pull it out
+   of the global boxed 2px table grid (meant for real tabular data) and let it
+   read as a plain, quiet list instead. */
+.ledger table {
+  width: auto;
+  max-width: 100%;
+}
+
+.ledger td {
+  border: none;
+  padding: calc(var(--line-height) * 0.25) 0;
+  vertical-align: baseline;
+}
+
+.ledger tr {
+  border-bottom: 1px solid var(--background-color-alt);
+}
+
+.ledger tr:last-child {
+  border-bottom: none;
+}
+
+.ledger td:first-child {
+  color: var(--text-color-alt);
+  padding-right: 2ch;
+  white-space: nowrap;
+}
+
+.ledger-updated {
+  margin-top: calc(var(--line-height) * 0.5);
+  color: var(--text-color-alt);
+  font-style: italic;
+}
+
+/* dt/dd auto-flow into a two-column grid (date, then entry) two cells at a
+   time, in source order -- no wrapper markup needed for each row. Dates go
+   tabular and accent-coloured, like the red-blinking dates elsewhere on the
+   site; a short dotted tick between date and line stands in for a ledger's
+   dot leader without depending on the entry text's length to line anything
+   up. */
+.ledger-entries {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  column-gap: 1.5ch;
+}
+
+.ledger-entries dt,
+.ledger-entries dd {
+  padding: calc(var(--line-height) * 0.4) 0;
+  border-bottom: 1px solid var(--background-color-alt);
+}
+
+.ledger-entries dt {
+  font-variant-numeric: tabular-nums lining-nums;
+  color: var(--accent);
+}
+
+.ledger-entries dd {
+  margin: 0;
+}
+
+.ledger-entries dd::before {
+  content: "";
+  display: inline-block;
+  width: 2ch;
+  height: 0.5em;
+  margin-right: 1ch;
+  border-bottom: 1px dotted var(--text-color-alt);
+}
+
+.ledger-entries dt:last-of-type,
+.ledger-entries dd:last-of-type {
+  border-bottom: none;
+}
+
 /* ------------------------------------------------------------
    The homepage terminal.
    Same machine as the footer one, given the room to be the front
@@ -1425,6 +1700,12 @@ label input {
     0 0 4px var(--background-color),
     0 0 4px var(--background-color),
     0 0 2px var(--background-color);
+}
+
+/* The idle caret is a solid block, not text, so it takes the halo as a
+   box-shadow rather than a text-shadow. */
+.tty-hero .tty-caret {
+  box-shadow: 0 0 4px 1px var(--background-color);
 }
 
 /* Boot is only a few lines now, but `help` and `cat` are not: scroll them
@@ -1480,6 +1761,9 @@ label input {
   .tty-hero .tty-prompt,
   .tty-hero .tty-input {
     text-shadow: none;
+  }
+  .tty-hero .tty-caret {
+    box-shadow: none;
   }
 }
 

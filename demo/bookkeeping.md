@@ -5,11 +5,11 @@ lang: en
 toc-title: Site Guide
 page-title: Bookkeeping
 summary: "a running ledger of small things"
-mood: iodine
+mood: bone
 ---
 <hr>
 
-a ledger. small things, kept because keeping them is the point.
+a ledger - nothing to legally bind you towards. <br><br> small things, however. <br>the ones that keep you sane;
 
 <hr>
 
@@ -22,15 +22,14 @@ a ledger. small things, kept because keeping them is the point.
 
 | | |
 |---|---|
-| listening | *[TODO: what's on]* |
-| reading | *[TODO: what's open]* |
-| working on | *[TODO: what's in progress]* |
-| taking | *[TODO: or delete this row]* |
-| waiting on | *[TODO: the one that matters]* |
+| listening | *assorted Japanese ambient, City and Colour - Bring Me Your Love (Special Edition), Dawn Golden - Still Life* |
+| reading | *Autobiography of Red - Anne Carson* |
+| working on | *nothing sonically - website, OSINT tools...i want to take photos again.* |
+| waiting on | *one-way plane tickets* |
 
 </div>
 
-<p class="ledger-updated">last counted — *[TODO: date]*</p>
+<p class="ledger-updated">last updated — *08/26/2026 @ 11:33 pm - humid night*</p>
 
 <hr>
 
@@ -41,14 +40,14 @@ a ledger. small things, kept because keeping them is the point.
 
 <dl class="ledger-entries">
 
-<dt>0000-00-00</dt>
-<dd>*[TODO: one line. it doesn't have to be important.]*</dd>
+<dt>2023-06-27</dt>
+<dd>*leap of faith*</dd>
 
-<dt>0000-00-00</dt>
-<dd>*[TODO: another.]*</dd>
+<dt>2018-12-31</dt>
+<dd>*there is a reminder every day - at dawn.*</dd>
 
-<dt>0000-00-00</dt>
-<dd>*[TODO: and so on.]*</dd>
+<dt>2025-02-14</dt>
+<dd>*if you stare at the sun long enough you just might go blind .*</dd>
 
 </dl>
 

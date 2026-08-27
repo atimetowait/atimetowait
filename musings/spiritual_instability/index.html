@@ -15,16 +15,25 @@ instability" />
   <meta property="og:title" content="spiritual instability" />
   <meta property="og:description" content="A movement of spiritual
 instability" />
-  <meta property="article:published_time" content="2026-08-26" />
+  <!-- date-meta, not date: -Vdate below feeds the version-footer build stamp
+       into the plain 2026-08-27 slot too, which would otherwise overwrite every
+       entry's real front-matter date with today's build day here. date-meta
+       is pandoc's own normalisation of the metadata's date field and isn't
+       affected by that -V, the same reason dcterms.date above uses it. -->
+  <meta property="article:published_time" content="2026-07-02" />
   <meta name="twitter:card" content="summary" />
 
-  <!-- Apply a saved theme before first paint, so choosing light on a dark OS
-       doesn't flash black first. Mirrors the `theme` terminal command. -->
+  <!-- Apply a saved theme (and art on/off) before first paint, so choosing light
+       on a dark OS doesn't flash black first, and so `art off` doesn't flash the
+       art for one frame before JS hides it. Mirrors the `theme` and `art`
+       terminal commands. -->
   <script>
     (function () {
       try {
         var t = localStorage.getItem("atimetowait:theme");
         if (t) document.documentElement.setAttribute("data-theme", t);
+        var a = localStorage.getItem("atimetowait:art");
+        if (a) document.documentElement.setAttribute("data-art", a);
       } catch (e) {}
     })();
   </script>
@@ -41,21 +50,36 @@ instability" />
   </tr>
 </table>
 
-<details class="toc-dropdown" id="site-guide">
+<details class="toc-dropdown" id="site-guide" open>
 <summary id="site-guide-title"><span class="guide-label">Site
 Guide</span></summary>
 <nav class="site-guide" role="navigation">
 <ul>
   <li><a href="/">Home</a></li>
   <li><a href="/musings/">Musings</a></li>
+  <!-- Unlinked for now while these sections are still being worked through.
+       Pages still exist at their URLs, just nothing in the nav points to
+       them. Restore by uncommenting. -->
+  <!--
   <li><a href="/sightseeing/">Sightseeing</a></li>
   <li><a href="/listen/">Listen</a></li>
   <li><a href="/bookkeeping/">Bookkeeping</a></li>
   <li><a href="/archive/">Archive</a></li>
+  -->
 </ul>
 </nav>
 </details>
 <div class="journal-entry">
+<header class="journal-entry-header">
+<h1 class="journal-entry-title">spiritual instability</h1>
+<!-- A div, not a <p>: index.js's line-reveal walks every <p> under
+     .journal-entry and fades it in on scroll, which is the right thing for
+     body prose but not for a page header that should just be there. -->
+<div class="journal-entry-meta">
+<span class="journal-date">2026-07-02</span>
+ · <span class="journal-tag">insync.avi</span>
+</div>
+</header>
 <p>There was a death at every corner.</p>
 <p>Underneath the bed, within the silenced figurine…they were all
 there.<br />
@@ -129,8 +153,8 @@ and that is how i remain</p>
 </div>
 <p class="journal-back"><a href="/musings/">← Musings</a></p>
   <div class="debug-grid"></div>
-  <script src="/src/index.js"></script>
-  <script src="/src/header-art.js"></script>
-  <script src="/src/terminal.js"></script>
+  <script src="/src/index.js" defer></script>
+  <script src="/src/header-art.js" defer></script>
+  <script src="/src/terminal.js" defer></script>
 </body>
 </html>

@@ -202,7 +202,7 @@ function initGlitch() {
  */
 function initLineReveal() {
   const entry = document.querySelector(".journal-entry");
-  if (!entry || prefersReducedMotion.matches) return;
+  if (!entry || entry.classList.contains("no-reveal") || prefersReducedMotion.matches) return;
   if (!("IntersectionObserver" in window)) return;
 
   const lines = [];

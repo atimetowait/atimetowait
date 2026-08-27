@@ -7,7 +7,7 @@ page-title: "in case you missed it"
 date: 2026-06-27
 summary: "icymi"
 tags: [stuff you don't really say out loud]
-mood: bruise
+mood: bone
 journal-entry: true
 from: markdown+hard_line_breaks
 ---

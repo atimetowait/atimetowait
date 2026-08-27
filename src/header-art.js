@@ -21,8 +21,26 @@
   var pre = document.querySelector(".header-art");
   if (!pre) return;
 
+  // CSS already hides the whole wrap for `art off`, prefers-contrast/
+  // reduced-transparency, and -- backdrops only -- any viewport <=90ch,
+  // which is most phones (see [data-art="off"] and .art-backdrop's media
+  // queries in index.css). Building the grid below and running the
+  // animation loop for a layer that will never paint is pure waste, and on
+  // a mirrored backdrop it is no longer a small waste: bail before doing
+  // any of it rather than let the IntersectionObserver further down notice
+  // and stop the loop only after the event loop has already spun.
+  var wrap = pre.parentElement;
+  if (wrap && getComputedStyle(wrap).display === "none") return;
+
   var rowEls = pre.querySelectorAll(".header-art-row");
   if (!rowEls.length) return;
+
+  // The homepage locks to 100dvh and never scrolls, so the tear effect below is
+  // near-dormant there. A backdrop sits behind a page of prose that scrolls
+  // constantly, which would otherwise drive this into full-rate rAF for the
+  // entire read. The tear is a scroll-specific effect anyway -- boot, twinkle,
+  // blink and melt are unaffected and still run on a backdrop.
+  var isBackdrop = !!pre.closest(".art-backdrop");
 
   // ------------------------------------------------------------------ the grid
 
@@ -70,8 +88,25 @@
   var shownClass = tone.slice();
 
   var pointer = { x: -1e6, y: -1e6, active: false };
+  // pointer.active only ever flips off on pointerleave (the mouse leaving the
+  // whole document), so a reader who parks the cursor anywhere on the page --
+  // the common case -- would otherwise pin the loop at full frame rate for
+  // the entire read. lastPointerMoveAt lets the melt settle back to the idle
+  // cadence a moment after the cursor actually stops, which is when the
+  // effect it drives is no longer visibly changing anyway.
+  var lastPointerMoveAt = -Infinity;
+  var POINTER_IDLE_MS = 200;
   var scrollVelocity = 0;
   var lastScrollY = window.scrollY;
+  // A backdrop shows the same fixed patch of art no matter where the page has
+  // scrolled to -- there's no "coming up" region to precompute. What actually
+  // helps is not fighting the scroll thread for the frame: this grid can run
+  // over 6x the homepage portrait's cell count, so its idle repaint is paused
+  // outright for the length of an active scroll gesture and picks back up a
+  // beat after it settles, rather than racing it every single frame.
+  var scrolling = false;
+  var scrollEndTimer = null;
+  var SCROLL_SETTLE_MS = 120;
   var tearRows = [];       // {row, shift, life}
   var booted = false;
   var bootStart = 0;
@@ -81,7 +116,10 @@
   // The art now drifts on its own, so the loop never settles to a stop. It is
   // gated instead: throttled to a slow tick when nothing is being touched, and
   // parked entirely when the art is off screen or the tab is in the background.
-  var IDLE_GAP = 70;     // ms between ambient repaints, about 14fps
+  // Backdrops can run far larger than the homepage's 10,340-cell portrait --
+  // this one is 65,120 -- so their idle tick is slower too: still smooth for a
+  // background layer nobody is looking straight at, at a fraction of the cost.
+  var IDLE_GAP = isBackdrop ? 130 : 70;     // ms between ambient repaints
   var lastPaint = 0;
   var onScreen = true;
   var awake = true;
@@ -99,9 +137,16 @@
 
   // ------------------------------------------------------------------- the loop
 
-  function cellMetrics() {
+  // The pre's own box only moves on resize (fixed backdrops don't shift with
+  // scroll; the homepage's in-flow copy doesn't shift as the terminal grows,
+  // only the terminal's own rect does -- see overlayBoxes). Reading it fresh
+  // every frame was a forced layout read on the hot path for no reason, so
+  // it's cached here and only recomputed when the viewport actually changes.
+  var cachedMetrics = null;
+
+  function computeMetrics() {
     var box = pre.getBoundingClientRect();
-    return {
+    cachedMetrics = {
       left: box.left,
       top: box.top,
       w: box.width / COLS,
@@ -109,9 +154,22 @@
     };
   }
 
+  function cellMetrics() {
+    if (!cachedMetrics) computeMetrics();
+    return cachedMetrics;
+  }
+
+  window.addEventListener("resize", computeMetrics);
+
+  // char -> index, built once. rampShift used to call RAMP.indexOf(char),
+  // an O(RAMP.length) scan repeated for every one of up to 65,120 cells every
+  // frame -- a lookup table turns that into O(1).
+  var RAMP_INDEX = {};
+  for (var ramp_i = 0; ramp_i < RAMP.length; ramp_i += 1) RAMP_INDEX[RAMP[ramp_i]] = ramp_i;
+
   function rampShift(char, steps) {
-    var i = RAMP.indexOf(char);
-    if (i === -1) return char;
+    var i = RAMP_INDEX[char];
+    if (i === undefined) return char;
     var next = Math.max(0, Math.min(RAMP.length - 1, i + steps));
     return RAMP[next];
   }
@@ -133,6 +191,12 @@
 
   /** The overlaid elements' boxes in grid coordinates. */
   function overlayBoxes(m) {
+    // Both halves of OVERLAY_SELECTOR only ever match inside .home-hero,
+    // which only the homepage template renders -- a backdrop page can never
+    // have one, so skip the query (and its getBoundingClientRect calls)
+    // outright rather than running it every frame just to get [] back.
+    if (isBackdrop) return [];
+
     // These are built or re-laid out after this module runs, so re-query each
     // time rather than caching a stale list.
     var els = document.querySelectorAll(OVERLAY_SELECTOR);
@@ -252,8 +316,13 @@
 
   function frame(now) {
     if (!awake) { running = false; return; }
+    // Not during boot: the type-in wipe is timed against wall-clock elapsed
+    // time, so pausing it here would just make it jump ahead once scrolling
+    // settles rather than actually skip any work.
+    if (scrolling && bootDone) { requestAnimationFrame(frame); return; }
 
-    var busy = pointer.active || tearRows.length || !bootDone ||
+    var pointerActive = pointer.active && (now - lastPointerMoveAt < POINTER_IDLE_MS);
+    var busy = pointerActive || tearRows.length || !bootDone ||
                Math.abs(scrollVelocity) > 0.4;
     // Interaction gets every frame; at rest the ambient drift only needs a slow
     // tick, which keeps 10,340 cells off the critical path.
@@ -271,7 +340,10 @@
     // Pointer position in grid coordinates.
     var px = (pointer.x - m.left) / m.w;
     var py = (pointer.y - m.top) / m.h;
-    var meltRadius = 11;
+    // 11 cells was tuned for the homepage portrait's 220-column grid. Scaling by
+    // COLS keeps the melt's felt size consistent on a narrower backdrop drawing
+    // instead of it swallowing a disproportionate fraction of a smaller piece.
+    var meltRadius = Math.max(4, Math.round(11 * (COLS / 220)));
 
     // Tear rows decay toward rest.
     for (var i = tearRows.length - 1; i >= 0; i -= 1) {
@@ -431,25 +503,36 @@
     kick();
   });
 
-  window.addEventListener("scroll", function () {
-    var y = window.scrollY;
-    var delta = y - lastScrollY;
-    lastScrollY = y;
-    scrollVelocity = delta;
+  if (!isBackdrop) {
+    window.addEventListener("scroll", function () {
+      var y = window.scrollY;
+      var delta = y - lastScrollY;
+      lastScrollY = y;
+      scrollVelocity = delta;
 
-    // Fast scrolling tears a few rows loose.
-    if (Math.abs(delta) > 14) {
-      var n = 1 + ((Math.random() * 3) | 0);
-      for (var i = 0; i < n; i += 1) {
-        tearRows.push({
-          row: (Math.random() * ROWS) | 0,
-          shift: (Math.random() * 18 - 9) | 0,
-          life: 1
-        });
+      // Fast scrolling tears a few rows loose.
+      if (Math.abs(delta) > 14) {
+        var n = 1 + ((Math.random() * 3) | 0);
+        for (var i = 0; i < n; i += 1) {
+          tearRows.push({
+            row: (Math.random() * ROWS) | 0,
+            shift: (Math.random() * 18 - 9) | 0,
+            life: 1
+          });
+        }
       }
-    }
-    kick();
-  }, { passive: true });
+      kick();
+    }, { passive: true });
+  } else {
+    // No tear, no velocity tracking -- just pause the idle repaint for the
+    // length of the gesture and let the perpetual rAF loop's next tick pick
+    // it back up once scrolling has actually settled.
+    window.addEventListener("scroll", function () {
+      scrolling = true;
+      if (scrollEndTimer) clearTimeout(scrollEndTimer);
+      scrollEndTimer = setTimeout(function () { scrolling = false; }, SCROLL_SETTLE_MS);
+    }, { passive: true });
+  }
 
   // Start the type-in immediately. The art sits at the top of the homepage, so it
   // is on screen at load; deferring to an IntersectionObserver only allowed one
@@ -466,8 +549,19 @@
     }, { threshold: 0 }).observe(pre);
   }
 
-  booted = true;
-  bootStart = performance.now();
+  // The type-in is a hero effect: the homepage art is the whole point of
+  // that screen, on screen at load, worth its own 1.4s of full-grid,
+  // every-frame work. A backdrop is deliberately peripheral -- "faint...
+  // only lightly present" per demo/art/README.md -- and now runs at 2x the
+  // cell count after mirroring, so it skips the wipe outright and starts
+  // straight from the settled state; ambient twinkle/melt/blink still run
+  // exactly as before.
+  if (isBackdrop) {
+    bootDone = true;
+  } else {
+    booted = true;
+    bootStart = performance.now();
+  }
   kick();
 
   // Watchdog on a timer rather than a frame: setTimeout still fires where rAF is

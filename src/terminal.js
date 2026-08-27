@@ -12,6 +12,7 @@
   var PROMPT = "atimetowait:~$";
   var MOODS = ["bone", "bruise", "vhs", "ember", "amber", "iodine"];
   var STORAGE_THEME = "atimetowait:theme";
+  var STORAGE_ART = "atimetowait:art";
 
   var manifest = null;
   var history = [];
@@ -139,6 +140,23 @@
     }
   }
 
+  // ---------------------------------------------------------------- the art
+
+  // One switch for both the homepage's full-bleed portrait and every other
+  // page's faint backdrop (src/index.css: [data-art="off"]). Mirrored
+  // pre-paint by the inline script in demo/template.html, the same way the
+  // theme choice is, so a reader who has turned it off never sees it flash in.
+  function applyArt(value) {
+    var root = document.documentElement;
+    if (value === "on") {
+      root.removeAttribute("data-art");
+      try { localStorage.removeItem(STORAGE_ART); } catch (e) {}
+    } else {
+      root.setAttribute("data-art", value);
+      try { localStorage.setItem(STORAGE_ART, value); } catch (e) {}
+    }
+  }
+
   // ------------------------------------------------------------- the commands
 
   var commands = {};
@@ -155,6 +173,7 @@
       ["find <term>", "search the writing"],
       ["mood <name>", "try on a palette — " + MOODS.join(", ")],
       ["theme <mode>", "light, dark, or auto"],
+      ["art <mode>", "on or off, if the backdrop is too much"],
       ["date", "what time it is out there"],
       ["clear", "wipe this"],
     ];
@@ -291,6 +310,15 @@
     }
     applyTheme(mode);
     print("theme: " + mode);
+  };
+
+  commands.art = function (args) {
+    var mode = args[0];
+    if (["on", "off"].indexOf(mode) === -1) {
+      return print("art on | off", "tty-dim");
+    }
+    applyArt(mode);
+    print("art: " + mode);
   };
 
   commands.home = function () {
@@ -462,6 +490,24 @@
     var promptRow = el("div", "tty-prompt-row");
     promptRow.appendChild(el("span", "tty-prompt", PROMPT));
     promptRow.appendChild(input);
+    // Autofocus only reaches devices with a real keyboard (see boot()), so on
+    // everything else the input can otherwise look inert. This idle cursor
+    // blinks until the reader's first focus, signalling the terminal is ready
+    // to type into. It's a flex sibling of the (wide, flex-grown) input, so it
+    // sits at the far right of the row rather than beside typed text -- fine
+    // while the input is empty, but wrong once there's a value. Retiring it
+    // permanently on first focus (rather than toggling with :focus-within)
+    // keeps it from reappearing, misplaced, after the reader blurs the input.
+    var caret = el("span", "tty-caret");
+    caret.setAttribute("aria-hidden", "true");
+    promptRow.appendChild(caret);
+    input.addEventListener(
+      "focus",
+      function () {
+        promptRow.classList.add("tty-engaged");
+      },
+      { once: true }
+    );
     shell.appendChild(promptRow);
 
     // Clicking anywhere in the terminal focuses the input, the way a real one
@@ -472,12 +518,6 @@
 
     if (isHero) {
       mount.replaceWith(shell);
-
-      // The Site Guide ships open so a reader without JS still gets full
-      // navigation. Once the terminal exists it covers the same ground, so
-      // fold the list away rather than showing both.
-      var guide = document.getElementById("site-guide");
-      if (guide) guide.open = false;
 
       // Tuck the intro and the about text away -- they're reachable as `home`
       // and `whatami`. Done as a class here rather than in the stylesheet so

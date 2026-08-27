@@ -4,11 +4,12 @@ subtitle: freya langley // aCadogan
 lang: en
 toc-title: Site Guide
 page-title: "nulled"
-date: 2076-2-14
+date: 2076-02-14
 summary: "this bias is beginning to show"
 tags: [NULLED]
-mood: ember
+mood: bone
 journal-entry: true
+no-reveal: true
 from: markdown+hard_line_breaks
 ---
 <p><em>Oddity 1: The Ossuary</em>

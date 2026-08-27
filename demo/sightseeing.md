@@ -4,6 +4,7 @@ subtitle: freya langley // aCadogan
 lang: en
 toc-title: Site Guide
 page-title: Sightseeing
+mood: bone
 ---
 
 <div class="sightseeing-gallery">
