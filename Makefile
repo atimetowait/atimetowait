@@ -58,8 +58,15 @@ demo/header-art.generated.html: demo/header-art.txt scripts/build-header-art.py
 # Any piece of art regenerates as demo/art/<name>.generated.html, with --class
 # art-backdrop so it gets the faint, margin-only treatment instead of the
 # homepage's full-bleed hero.
+#
+# Per-piece flare: most art leaves this at the --flare default (1) via
+# FLARE_<name> being unset. Set one below to make a specific piece's cells
+# blink and twinkle more often than the site default -- see --flare's help
+# in scripts/build-header-art.py.
+FLARE_myownkin=1.6
+
 demo/art/%.generated.html: demo/art/%.txt scripts/build-header-art.py
-	python3 scripts/build-header-art.py --source $< --output $@ --class art-backdrop
+	python3 scripts/build-header-art.py --source $< --output $@ --class art-backdrop $(if $(FLARE_$*),--flare=$(FLARE_$*))
 
 musings/index.html: demo/musings.generated.md demo/template.html Makefile $(ART_HTML)
 	mkdir -p musings

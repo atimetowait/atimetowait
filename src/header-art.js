@@ -42,6 +42,12 @@
   // blink and melt are unaffected and still run on a backdrop.
   var isBackdrop = !!pre.closest(".art-backdrop");
 
+  // Per-piece animation intensity, written by build-header-art.py's --flare
+  // (default 1, so most art never sets it). A multiplier rather than a new
+  // effect: it scales how often cells blink and twinkle, so a piece can read
+  // as livelier without every backdrop on the site picking up the change.
+  var FLARE = parseFloat(pre.style.getPropertyValue("--art-flare")) || 1;
+
   // ------------------------------------------------------------------ the grid
 
   var ROWS = rowEls.length;
@@ -258,7 +264,7 @@
     // Weighted by ink, so the red gathers on the figure rather than scattering
     // evenly across empty background.
     var weight = 0.2 + 0.8 * (toneTier[b] / 7);
-    blinkPeriod[b] = Math.random() < 0.13 * weight
+    blinkPeriod[b] = Math.random() < 0.13 * weight * FLARE
       ? BLINK_MIN + Math.random() * BLINK_VAR
       : 0;  // 0 means this cell never blinks
     blinkPhase[b] = Math.random() * (BLINK_MIN + BLINK_VAR);
@@ -302,7 +308,9 @@
   var meltThresh = new Float32Array(COUNT);
 
   for (var w = 0; w < COUNT; w += 1) {
-    twPeriod[w] = TWINKLE_MIN + Math.random() * TWINKLE_VAR;
+    // FLARE shortens the cycle (not TWINKLE_ON), so a flared piece's cells
+    // spend more of their time shifted rather than shifting further.
+    twPeriod[w] = (TWINKLE_MIN + Math.random() * TWINKLE_VAR) / FLARE;
     twPhase[w] = Math.random() * twPeriod[w];
     twDir[w] = Math.random() < 0.5 ? -1 : 1;
     meltDir[w] = Math.random() < 0.5 ? -1 : 1;

@@ -1196,7 +1196,11 @@ label input {
   justify-content: center;
   overflow: hidden;
   pointer-events: none;
-  opacity: 0.22;
+  /* The cleared reading column only ever sees this at its 0.15 mask multiplier
+     (below), so the 10%-before-4.5:1-fails ceiling from the comment above caps
+     this at ~0.66 -- 0.34 leaves plenty of margin while reading noticeably
+     brighter in the margins, where there's no text to fight at all. */
+  opacity: 0.34;
 
   /* --clear is a half-width, so the cleared band is 2x it -- wider than
      body's 80ch/2 = 40ch, so the column itself is never in the fully-clear
@@ -1230,11 +1234,11 @@ label input {
    assignment for the dark case, not the only one. */
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) .art-backdrop {
-    opacity: 0.26;
+    opacity: 0.4;
   }
 }
 :root[data-theme="dark"] .art-backdrop {
-  opacity: 0.26;
+  opacity: 0.4;
 }
 
 /* Accessibility floor, same precedent as .tty-hero's halo: a reader who has

@@ -60,6 +60,14 @@ def parse_args() -> argparse.Namespace:
         help="class on the outer wrapping <div> -- header-art-wrap for a full-bleed "
         "hero, art-backdrop for the faint backdrop mode used on other pages",
     )
+    parser.add_argument(
+        "--flare",
+        type=float,
+        default=1.0,
+        help="per-piece animation multiplier read by header-art.js: how much more "
+        "often cells blink and twinkle than the site default (1.0). Written as "
+        "--art-flare alongside --art-cols/--art-rows, so most art never sets it.",
+    )
     return parser.parse_args()
 
 
@@ -121,7 +129,7 @@ def tier_of(weight: float) -> int:
     return min(TONE_TIERS - 1, int(weight * TONE_TIERS))
 
 
-def build(rows: list[str], description: str, wrapper_class: str) -> str:
+def build(rows: list[str], description: str, wrapper_class: str, flare: float) -> str:
     weights = ink_weights(set("".join(rows)))
 
     row_markup = []
@@ -139,12 +147,13 @@ def build(rows: list[str], description: str, wrapper_class: str) -> str:
 
     cols = len(rows[0])
     rows_n = len(rows)
+    flare_style = f" --art-flare:{flare};" if flare != 1.0 else ""
 
     return (
         f'<div class="{html.escape(wrapper_class)}">\n'
         f'<p class="visually-hidden">{html.escape(description)}</p>\n'
         f'<pre class="header-art" aria-hidden="true" '
-        f'style="--art-cols:{cols}; --art-rows:{rows_n}">{art}</pre>\n'
+        f'style="--art-cols:{cols}; --art-rows:{rows_n};{flare_style}">{art}</pre>\n'
         '</div>\n'
     )
 
@@ -153,7 +162,9 @@ def main() -> None:
     args = parse_args()
     rows = load_rows(args.source)
     args.output.parent.mkdir(parents=True, exist_ok=True)
-    args.output.write_text(build(rows, args.description, args.wrapper_class), encoding="utf-8")
+    args.output.write_text(
+        build(rows, args.description, args.wrapper_class, args.flare), encoding="utf-8"
+    )
     print(
         f"wrote {args.output} "
         f"({len(rows)} rows x {len(rows[0])} cols = {len(rows) * len(rows[0])} cells)"
