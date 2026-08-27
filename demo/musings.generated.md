@@ -13,7 +13,7 @@ page-title: Musings
 </ul>
 <h2>July 2026</h2>
 <ul>
-<li data-mood="vhs"><span class="journal-date">2026-07-02</span> · <a href="/musings/spiritual_instability/">A movement of spiritual instability</a> · <span class="journal-tag">insync.avi</span></li>
+<li data-mood="bone"><span class="journal-date">2026-07-02</span> · <a href="/musings/spiritual_instability/">A movement of spiritual instability</a> · <span class="journal-tag">insync.avi</span></li>
 </ul>
 <h2>June 2026</h2>
 <ul>
@@ -21,6 +21,6 @@ page-title: Musings
 </ul>
 <h2>November 1999</h2>
 <ul>
-<li data-mood="amber"><span class="journal-date">1999-11-10</span> · <a href="/musings/myownkin/">you and your mind are both really beautiful</a> · <span class="journal-tag">tag yourself</span></li>
+<li data-mood="bone"><span class="journal-date">1999-11-10</span> · <a href="/musings/myownkin/">you and your mind are both really beautiful</a> · <span class="journal-tag">tag yourself</span></li>
 </ul>
 </nav>

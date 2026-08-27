@@ -7,7 +7,7 @@ page-title: "a&m"
 date: 1999-11-10
 summary: "you and your mind are both really beautiful"
 tags: [tag yourself]
-mood: amber
+mood: bone
 journal-entry: true
 from: markdown+hard_line_breaks
 ---

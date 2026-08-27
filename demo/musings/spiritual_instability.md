@@ -7,7 +7,7 @@ page-title: "spiritual instability"
 date: 2026-07-02
 summary: "A movement of spiritual instability"
 tags: [insync.avi ]
-mood: vhs
+mood: bone
 journal-entry: true
 from: markdown+hard_line_breaks
 ---
