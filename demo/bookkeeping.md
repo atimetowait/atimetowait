@@ -6,6 +6,7 @@ toc-title: Site Guide
 page-title: Bookkeeping
 summary: "a running ledger of small things"
 mood: bone
+bare-header: true
 ---
 <hr>
 

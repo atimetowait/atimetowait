@@ -55,7 +55,7 @@ $if(math)$
   $math$
 $endif$
 </head>
-<body>
+<body$if(bodyclass)$ class="$bodyclass$"$endif$>
 $if(terminal-home)$
 <!-- The art and the terminal need a shared positioned ancestor so the terminal
      can be laid into the art rather than stacked beneath it. -->
@@ -64,7 +64,7 @@ $endif$
 $for(include-before)$
 $include-before$
 $endfor$
-<table class="header">
+<table class="header$if(bare-header)$ header-bare$endif$">
   <tr>
     <td class="width-auto">
       <h1 class="title$if(bare-header)$ visually-hidden$endif$"><a href="/">$title$</a></h1>
@@ -80,9 +80,8 @@ $abstract$
 </div>
 $endif$
 $if(terminal-home)$
-<!-- terminal.js builds the prompt here instead of in the footer. Empty on
-     purpose: without JS this collapses to nothing and the page below still
-     reads normally. -->
+<!-- terminal.js builds the prompt here. Empty on purpose: without JS this
+     collapses to nothing and the page below still reads normally. -->
 <div id="tty-mount"></div>
 $endif$
 <details class="toc-dropdown" id="site-guide" open>
@@ -134,6 +133,8 @@ $endfor$
   <div class="debug-grid"></div>
   <script src="/src/index.js" defer></script>
   <script src="/src/header-art.js" defer></script>
+$if(terminal-home)$
   <script src="/src/terminal.js" defer></script>
+$endif$
 </body>
 </html>

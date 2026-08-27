@@ -4,6 +4,7 @@ subtitle: freya langley // aCadogan
 lang: en
 toc-title: Site Guide
 page-title: Archive
+bare-header: true
 ---
 
 <div class="archive">

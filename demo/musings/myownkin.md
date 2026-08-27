@@ -9,6 +9,7 @@ summary: "you and your mind are both really beautiful"
 tags: [tag yourself]
 mood: bone
 journal-entry: true
+bare-header: true
 from: markdown+hard_line_breaks
 ---
 For so long I have kept myself all down under.
@@ -60,5 +61,3 @@ Being able to have the time to recount all the moments, all the reasons, off all
 And still, with naivety and all.
 
 It's been yours to say from the start, if it were up to me.
-
-<hr>

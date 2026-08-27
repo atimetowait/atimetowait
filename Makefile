@@ -70,7 +70,7 @@ demo/art/%.generated.html: demo/art/%.txt scripts/build-header-art.py
 
 musings/index.html: demo/musings.generated.md demo/template.html Makefile $(ART_HTML)
 	mkdir -p musings
-	$(PANDOC) $(call art_flag,musings) -i demo/musings.generated.md -o $@
+	$(PANDOC) $(call art_flag,musings) -Vbodyclass=musings-index -i demo/musings.generated.md -o $@
 
 bookkeeping/index.html: demo/bookkeeping.md demo/template.html Makefile $(ART_HTML)
 	mkdir -p bookkeeping
@@ -90,7 +90,7 @@ archive/index.html: demo/archive.generated.md demo/template.html Makefile $(ART_
 
 musings/%/index.html: demo/musings/%.md demo/template.html Makefile $(ART_HTML)
 	mkdir -p musings/$*
-	$(JOURNAL_PANDOC) $(call art_flag,$*) -i demo/musings/$*.md -o $@
+	$(JOURNAL_PANDOC) $(call art_flag,$*) -Vbodyclass=journal-entry-page -i demo/musings/$*.md -o $@
 
 serve: all
 	live-server --open=/ --host=127.0.0.1 .

@@ -360,10 +360,20 @@ th {
   }
 }
 
+/* Shared by the homepage hero (title/subtitle sit inside the art instead)
+   and every other bare-header page (title/subtitle are redundant with the
+   "Home" link already in the site guide below): visually-hidden only takes
+   the text out of flow, not this table's own border and padding, so without
+   this the row would still show as an empty ruled bar. Collapsing it to
+   nothing lets the site guide directly below rise into that space instead. */
 .home-hero .header,
 .home-hero .header tbody tr:first-child > td,
 .home-hero .header tbody tr:last-child > td,
-.home-hero .header td {
+.home-hero .header td,
+.header-bare,
+.header-bare tbody tr:first-child > td,
+.header-bare tbody tr:last-child > td,
+.header-bare td {
   border: none;
   padding: 0;
   margin: 0;
@@ -517,10 +527,10 @@ th {
 }
 
 .home-hero #site-guide summary::before {
-  content: "are You lost? - ";
+  content: "are You lost?";
   color: var(--text-color-alt);
-  /* Its own keyframes so it can keep its dimmer resting tone, but the same
-     duration and delay as the label, so the two pulse as one phrase. */
+  /* Its own keyframes so it can keep its dimmer resting tone, matching the
+     duration and delay the label used to carry when it was still visible. */
   animation: red-blink-dim 11s ease-in-out infinite;
   animation-delay: -7.5s;
 }
@@ -538,14 +548,14 @@ th {
   text-decoration-thickness: var(--border-thickness);
 }
 
-/* Same slow, staggered red pulse the terminal prompt carries. */
+/* "are You lost?" already does the label's job in the hero, so the redundant
+   "Site Guide" text is hidden here only -- the plain dropdown on every other
+   page still shows and underlines it as its own label. */
 .home-hero #site-guide summary .guide-label {
-  animation: red-blink 11s ease-in-out infinite;
-  animation-delay: -7.5s;
+  display: none;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .home-hero #site-guide summary .guide-label,
   .home-hero #site-guide summary::before { animation: none; }
 }
 
@@ -558,7 +568,7 @@ th {
 }
 
 .home-hero #site-guide li + li {
-  margin-top: 0;
+  margin-top: calc(var(--line-height) * 0.4);
 }
 
 .home-hero #site-guide li::before {
@@ -568,13 +578,12 @@ th {
 
 .home-hero #site-guide a {
   color: var(--text-color);
-  text-decoration: none;
+  text-decoration: underline;
 }
 
 .home-hero #site-guide a:hover,
 .home-hero #site-guide a:focus-visible {
   color: var(--accent);
-  text-decoration: underline;
 }
 
 /* Portrait: back into the flow, under the dissolved edge of the art. */
@@ -705,6 +714,29 @@ details.details-plain > :not(summary) {
 }
 .site-guide li + li {
   margin-top: calc(var(--line-height) * 0.75);
+}
+
+/* The musings index and every journal entry borrow the homepage hero's
+   "are You lost?" identity for their dropdown label. No absolute positioning
+   and no halo here, unlike the hero -- these pages' backdrop is already
+   masked near-clear behind the reading column (see PER-PAGE ART BACKDROP),
+   so plain text reads fine. */
+body.musings-index #site-guide summary::before,
+body.journal-entry-page #site-guide summary::before {
+  content: "are You lost?";
+  color: var(--text-color-alt);
+  animation: red-blink-dim 11s ease-in-out infinite;
+  animation-delay: -7.5s;
+}
+
+body.musings-index #site-guide summary .guide-label,
+body.journal-entry-page #site-guide summary .guide-label {
+  display: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body.musings-index #site-guide summary::before,
+  body.journal-entry-page #site-guide summary::before { animation: none; }
 }
 
 .journal-entry {
@@ -1196,9 +1228,9 @@ label input {
   justify-content: center;
   overflow: hidden;
   pointer-events: none;
-  /* The cleared reading column only ever sees this at its 0.15 mask multiplier
+  /* The cleared reading column only ever sees this at its 0.22 mask multiplier
      (below), so the 10%-before-4.5:1-fails ceiling from the comment above caps
-     this at ~0.66 -- 0.34 leaves plenty of margin while reading noticeably
+     this at ~0.45 -- 0.34 leaves a bit of margin while reading noticeably
      brighter in the margins, where there's no text to fight at all. */
   opacity: 0.34;
 
@@ -1211,8 +1243,8 @@ label input {
     to right,
     #000 0,
     #000 calc(50% - var(--clear) - var(--feather)),
-    rgba(0, 0, 0, 0.15) calc(50% - var(--clear)),
-    rgba(0, 0, 0, 0.15) calc(50% + var(--clear)),
+    rgba(0, 0, 0, 0.22) calc(50% - var(--clear)),
+    rgba(0, 0, 0, 0.22) calc(50% + var(--clear)),
     #000 calc(50% + var(--clear) + var(--feather)),
     #000 100%
   );
@@ -1220,8 +1252,8 @@ label input {
     to right,
     #000 0,
     #000 calc(50% - var(--clear) - var(--feather)),
-    rgba(0, 0, 0, 0.15) calc(50% - var(--clear)),
-    rgba(0, 0, 0, 0.15) calc(50% + var(--clear)),
+    rgba(0, 0, 0, 0.22) calc(50% - var(--clear)),
+    rgba(0, 0, 0, 0.22) calc(50% + var(--clear)),
     #000 calc(50% + var(--clear) + var(--feather)),
     #000 100%
   );
@@ -1260,27 +1292,16 @@ label input {
 }
 
 /* ============================================================
-   THE FOOTER TERMINAL
-   Built by src/terminal.js; absent entirely without JS.
+   THE TERMINAL
+   Built by src/terminal.js, homepage only; absent entirely without JS.
+   Every other page used to get a quiet footer copy -- boxed chrome the
+   backdrop art couldn't show through -- which is why this base class is
+   now just the properties .tty-hero (below) doesn't already replace.
    ============================================================ */
 
 .tty {
-  display: block;
-  width: 100%;
-  max-width: 80ch;
-  margin: calc(var(--line-height) * 3) auto calc(var(--line-height) * 2);
-  padding-top: var(--line-height);
-  border-top: var(--border-thickness) solid var(--text-color-alt);
-  font-size: 0.875rem;
   line-height: var(--line-height);
   cursor: text;
-}
-
-.tty-label {
-  color: var(--text-color-alt);
-  text-align: center;
-  margin-bottom: var(--line-height);
-  font-style: italic;
 }
 
 .tty-out {
@@ -1367,10 +1388,6 @@ label input {
   .tty-caret {
     animation: none;
   }
-}
-
-@media (max-width: 60ch) {
-  .tty-out { max-height: calc(var(--line-height) * 12); }
 }
 
 /* ============================================================
@@ -1660,14 +1677,17 @@ label input {
 }
 
 /* ------------------------------------------------------------
-   The homepage terminal.
-   Same machine as the footer one, given the room to be the front
-   door. Declared after .tty so it wins at equal specificity.
+   The homepage terminal -- the only terminal now. Layered onto
+   the shared .tty above rather than folded into it, so the two
+   still read as one component split by what's homepage-specific.
    ------------------------------------------------------------ */
 
 /**
- * No chrome at all: this is text standing in the art, not a panel resting on
- * top of it. It sits in the upper-centre, which is the art's negative space
+ * Still no filled panel -- this is text standing in the art, not a slab
+ * resting on top of it -- but an outline of its own colour (not the halo's
+ * background-colour pool) is what actually reads as a terminal rather than
+ * just prompt-shaped text; the idle caret was doing all of that work alone
+ * before. It sits in the upper-centre, which is the art's negative space
  * (density 15/100 there, against 82 across the bottom), so the figure below
  * stays intact.
  */
@@ -1682,10 +1702,18 @@ label input {
      220, so the right margin is the one place a block of text does not land on
      it or on the centre of the composition. */
   width: min(60ch, 46vw);
-  margin: 0;
-  padding: 0;
-  border: none;
   background: none;
+  border: 1px solid var(--accent);
+  padding: calc(var(--line-height) * 0.5) 1ch;
+  /* Same trick as the halo below, applied to the outline itself: without it
+     the border reads fine over the faint backdrop but can vanish for a
+     stretch wherever it crosses a dense, similarly-toned patch of the art.
+     Two layers, not one: a hard 0-blur ring gives the line a fully solid
+     backing right at the edge, and the soft blur past it is what actually
+     blends that ring into the art instead of reading as a hard box. */
+  box-shadow:
+    0 0 0 1px var(--background-color),
+    0 0 4px 1px var(--background-color);
   font-size: 0.9375rem;
   text-align: left;
 }

@@ -5,6 +5,7 @@ lang: en
 toc-title: Site Guide
 page-title: Sightseeing
 mood: bone
+bare-header: true
 ---
 
 <div class="sightseeing-gallery">

@@ -9,6 +9,7 @@ summary: "one-line hook for the index"
 tags: [tag]
 mood: bone
 journal-entry: true
+bare-header: true
 from: markdown+hard_line_breaks
 ---
 

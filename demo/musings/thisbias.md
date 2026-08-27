@@ -10,6 +10,7 @@ tags: [NULLED]
 mood: bone
 journal-entry: true
 no-reveal: true
+bare-header: true
 from: markdown+hard_line_breaks
 ---
 <p><em>Oddity 1: The Ossuary</em>

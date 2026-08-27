@@ -9,6 +9,7 @@ summary: "A movement of spiritual instability"
 tags: [insync.avi ]
 mood: bone
 journal-entry: true
+bare-header: true
 from: markdown+hard_line_breaks
 ---
 There was a death at every corner.

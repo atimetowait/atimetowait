@@ -4,6 +4,7 @@ subtitle: freya langley // aCadogan
 lang: en
 toc-title: Site Guide
 page-title: Musings
+bare-header: true
 ---
 
 <nav class="journal-index" role="navigation">

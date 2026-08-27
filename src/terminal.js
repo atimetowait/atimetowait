@@ -1,10 +1,11 @@
 /**
- * The footer terminal.
+ * The homepage terminal.
  *
  * Renders itself entirely from JS, so a reader without JavaScript gets a clean
  * page rather than a dead input box. It never captures global keystrokes --
  * typing only reaches it when the input is focused, so ordinary reading,
- * scrolling and find-in-page are untouched.
+ * scrolling and find-in-page are untouched. Every other page has no mount for
+ * it (see init()) and gets no terminal at all.
  */
 (function () {
   "use strict";
@@ -469,22 +470,15 @@
   });
 
   /**
-   * Two shapes. On the homepage the template leaves a #tty-mount div near the
-   * top and the terminal becomes the page's front door, booting with `help`
-   * already run. Everywhere else it's a quiet footer.
+   * The homepage template leaves a #tty-mount div near the top, and the
+   * terminal becomes that page's front door. Every other page has no mount,
+   * and init() returns before this runs -- the footer version that used to
+   * render there was pure chrome around a box the backdrop art couldn't show
+   * through, so it's gone rather than kept as an unused second shape.
    */
-  function build() {
-    var mount = document.getElementById("tty-mount");
-    var isHero = !!mount;
-
-    var shell = el(isHero ? "section" : "footer", "tty" + (isHero ? " tty-hero" : ""));
-
-    if (isHero) {
-      shell.setAttribute("aria-label", "Terminal");
-    } else {
-      shell.appendChild(el("div", "tty-label", "— you can type here —"));
-    }
-
+  function build(mount) {
+    var shell = el("section", "tty tty-hero");
+    shell.setAttribute("aria-label", "Terminal");
     shell.appendChild(out);
 
     var promptRow = el("div", "tty-prompt-row");
@@ -516,31 +510,20 @@
       if (event.target.tagName !== "A") input.focus();
     });
 
-    if (isHero) {
-      mount.replaceWith(shell);
+    mount.replaceWith(shell);
 
-      // Tuck the intro and the about text away -- they're reachable as `home`
-      // and `whatami`. Done as a class here rather than in the stylesheet so
-      // that with JS off the page still reads as ordinary prose.
-      document.body.classList.add("home-terminal");
-      // Also on <html>: the one-screen rule has to clip on the root element,
-      // because clipping <body> would crop the full-bleed hero back to body's
-      // 80ch measure.
-      document.documentElement.classList.add("home-terminal");
-    } else {
-      document.body.appendChild(shell);
-    }
-
-    return isHero;
+    // Tuck the intro and the about text away -- they're reachable as `home`
+    // and `whatami`. Done as a class here rather than in the stylesheet so
+    // that with JS off the page still reads as ordinary prose.
+    document.body.classList.add("home-terminal");
+    // Also on <html>: the one-screen rule has to clip on the root element,
+    // because clipping <body> would crop the full-bleed hero back to body's
+    // 80ch measure.
+    document.documentElement.classList.add("home-terminal");
   }
 
-  function boot(isHero) {
-    if (!isHero) {
-      print("type help.", "tty-dim");
-      return;
-    }
-
-    // Deliberately short. The terminal now sits inside the artwork, so the boot
+  function boot() {
+    // Deliberately short. The terminal sits inside the artwork, so the boot
     // is a few lines rather than the full command listing -- `help` still prints
     // everything on request, so nothing is lost but the art stays visible.
     print("atimetowait — freya langley // aCadogan", "tty-strong");
@@ -557,8 +540,14 @@
   }
 
   function init() {
-    var isHero = build();
-    boot(isHero);
+    // Every page other than the homepage has no mount: it gets no terminal at
+    // all now, rather than a footer copy, so there's no boxed-off chrome for
+    // the backdrop art to compete with and nothing here to build or fetch for.
+    var mount = document.getElementById("tty-mount");
+    if (!mount) return;
+
+    build(mount);
+    boot();
 
     fetch("/site-manifest.json")
       .then(function (r) { return r.json(); })

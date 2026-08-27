@@ -6,6 +6,7 @@ toc-title: Site Guide
 page-title: Listen
 summary: "music, under whichever name"
 mood: bone
+bare-header: true
 ---
 <hr>
 
