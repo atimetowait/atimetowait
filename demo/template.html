@@ -47,14 +47,19 @@ $if(math)$
 $endif$
 </head>
 <body>
+$if(terminal-home)$
+<!-- The art and the terminal need a shared positioned ancestor so the terminal
+     can be laid into the art rather than stacked beneath it. -->
+<div class="home-hero">
+$endif$
 $for(include-before)$
 $include-before$
 $endfor$
 <table class="header">
   <tr>
     <td class="width-auto">
-      <h1 class="title"><a href="/">$title$</a></h1>
-      <span class="subtitle">$subtitle$</span>
+      <h1 class="title$if(bare-header)$ visually-hidden$endif$"><a href="/">$title$</a></h1>
+      <span class="subtitle$if(bare-header)$ visually-hidden$endif$">$subtitle$</span>
     </td>
   </tr>
 </table>
@@ -73,9 +78,9 @@ $if(terminal-home)$
 $endif$
 <details class="toc-dropdown" id="site-guide"$if(page-title)$$else$ open$endif$>
 $if(toc-title)$
-<summary id="site-guide-title">$toc-title$</summary>
+<summary id="site-guide-title"><span class="guide-label">$toc-title$</span></summary>
 $else$
-<summary id="site-guide-title">Site Guide</summary>
+<summary id="site-guide-title"><span class="guide-label">Site Guide</span></summary>
 $endif$
 <nav class="site-guide" role="navigation">
 <ul>
@@ -88,6 +93,9 @@ $endif$
 </ul>
 </nav>
 </details>
+$if(terminal-home)$
+</div>
+$endif$
 $if(journal-entry)$
 <div class="journal-entry">
 $body$
@@ -101,6 +109,7 @@ $include-after$
 $endfor$
   <div class="debug-grid"></div>
   <script src="/src/index.js"></script>
+  <script src="/src/header-art.js"></script>
   <script src="/src/terminal.js"></script>
 </body>
 </html>

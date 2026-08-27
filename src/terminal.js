@@ -483,6 +483,10 @@
       // and `whatami`. Done as a class here rather than in the stylesheet so
       // that with JS off the page still reads as ordinary prose.
       document.body.classList.add("home-terminal");
+      // Also on <html>: the one-screen rule has to clip on the root element,
+      // because clipping <body> would crop the full-bleed hero back to body's
+      // 80ch measure.
+      document.documentElement.classList.add("home-terminal");
     } else {
       document.body.appendChild(shell);
     }
@@ -496,14 +500,13 @@
       return;
     }
 
+    // Deliberately short. The terminal now sits inside the artwork, so the boot
+    // is a few lines rather than the full command listing -- `help` still prints
+    // everything on request, so nothing is lost but the art stays visible.
     print("atimetowait — freya langley // aCadogan", "tty-strong");
     print("last login: whenever you got here. the dates don't mean much.", "tty-dim");
     printBlank();
-
-    // `help` is static, so it can run before the manifest arrives.
-    run("help");
-    printBlank();
-    print("start with: home", "tty-strong");
+    print("start with: home — or help for everything else", "tty-strong");
     printBlank();
 
     // Focus only where a keyboard is actually attached -- autofocusing on a

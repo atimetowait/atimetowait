@@ -24,6 +24,7 @@ all: $(HTML_PAGES) $(JOURNAL_HTML)
 # reproducible from source.
 clean:
 	rm -f index.html demo/musings.generated.md demo/archive.generated.md site-manifest.json
+	rm -f demo/header-art.generated.html
 	rm -f sightseeing/index.html
 	rm -rf musings bookkeeping listen archive
 
@@ -32,8 +33,13 @@ clean:
 demo/musings.generated.md demo/archive.generated.md site-manifest.json &: $(JOURNAL_ENTRIES) scripts/build-musings-index.py
 	python3 scripts/build-musings-index.py
 
-index.html: demo/index.md demo/template.html Makefile
-	$(PANDOC) -i demo/index.md -o $@
+# --include-before-body inserts the file verbatim: no template interpolation and no
+# markdown parsing, so the art's backslashes, $$, {} and ~ survive untouched.
+index.html: demo/index.md demo/template.html demo/header-art.generated.html Makefile
+	$(PANDOC) --include-before-body=demo/header-art.generated.html -i demo/index.md -o $@
+
+demo/header-art.generated.html: demo/header-art.txt scripts/build-header-art.py
+	python3 scripts/build-header-art.py
 
 musings/index.html: demo/musings.generated.md demo/template.html Makefile
 	mkdir -p musings
@@ -63,7 +69,7 @@ serve: all
 	live-server --open=/ --host=127.0.0.1 .
 
 watch:
-	printf '%s\n' demo/index.md demo/bookkeeping.md demo/sightseeing.md demo/listen.md demo/template.html demo/musings.generated.md demo/archive.generated.md Makefile scripts/build-musings-index.py | entr -n make
+	printf '%s\n' demo/index.md demo/bookkeeping.md demo/sightseeing.md demo/listen.md demo/template.html demo/musings.generated.md demo/archive.generated.md demo/header-art.txt Makefile scripts/build-musings-index.py scripts/build-header-art.py | entr -n make
 	find demo/musings -name '*.md' -print 2>/dev/null | entr -n make
 
 .PHONY: all clean serve watch

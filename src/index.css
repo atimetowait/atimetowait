@@ -124,6 +124,7 @@ br + br {
 }
 
 html {
+  overflow-x: clip;
   display: flex;
   width: 100%;
   margin: 0;
@@ -270,6 +271,18 @@ th {
 .center {
   text-align: center;
 }
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
 .header {
   --header-title-gap: calc(var(--line-height) * 0.5);
   --header-edge-gap: calc(var(--line-height) * 0.5);
@@ -303,6 +316,299 @@ th {
   padding-bottom: var(--header-edge-gap);
   border-bottom: var(--border-thickness) solid var(--text-color);
 }
+/* ------------------------------------------------------------
+   THE HEADER ASCII ART
+
+   Real text, not a raster, so src/header-art.js can address and
+   distort individual cells. Built by scripts/build-header-art.py
+   into demo/header-art.generated.html.
+   ------------------------------------------------------------ */
+
+/* The first screen: the art is the ground, and the terminal is laid into it.
+   Breaks out of body's 80ch measure, and is the positioned ancestor both the
+   art and the terminal are placed against. */
+/**
+ * The homepage is one screen and stops there.
+ *
+ * Scoped to .home-terminal, the class terminal.js adds once it has taken over
+ * and hidden the prose: with JS off that prose is still the page's content and
+ * must stay scrollable. Landscape only, because in portrait the art, terminal
+ * and guide stack taller than the viewport and clipping them would cut the page
+ * off rather than tidy it.
+ */
+@media (min-aspect-ratio: 1/1) {
+  html.home-terminal {
+    height: 100dvh;
+    overflow: hidden;
+  }
+  /* The UA's default 8px body margin pushed the hero past the viewport, so the
+     bottom 8px of the art was being clipped away. Only zeroed here, where the
+     page is a single full-bleed screen; every other page keeps its gutter. */
+  html.home-terminal > body {
+    margin: 0;
+  }
+}
+
+.home-hero .header,
+.home-hero .header tbody tr:first-child > td,
+.home-hero .header tbody tr:last-child > td,
+.home-hero .header td {
+  border: none;
+  padding: 0;
+  margin: 0;
+  line-height: 0;
+}
+
+.home-hero {
+  position: relative;
+  width: 100vw;
+  margin-left: calc(50% - 50vw);
+  /* Exactly one screen. Sizing the art to 100dvh rather than 125 also pulls
+     it back about a fifth, which shows more of the composition and less crop. */
+  height: 100dvh;
+  overflow: hidden;
+}
+
+.header-art-wrap {
+  position: absolute;
+  inset: 0;
+  /* Centring via flex so that when the art is wider than the viewport it
+     overflows -- and is clipped -- evenly on both sides. */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.header-art {
+  flex: none;
+  width: max-content;
+  /**
+   * Cover, capped.
+   *
+   *   --art-fit    fills the width  (220 cols x 0.6em advance = 132)
+   *   --art-cover  fills the height (47 rows x 1.2 line-height = 56.4)
+   *
+   * max() of the two is a cover fit, so the art fills the screen in both axes
+   * and crops horizontally -- about 12% a side on 16:9.
+   *
+   * The cap matters: the art is 2.34:1, so on a portrait phone a true cover
+   * would scale to ~15px and show only the middle fifth of the image. Clamping
+   * how far it may outgrow the width keeps the crop sane, and the portrait rule
+   * further down takes over from there.
+   */
+  --art-fit: calc(100vw / 132);
+  --art-cover: calc(100dvh / 56.4);
+  --art-cap: calc(var(--art-fit) * 1.6);
+  font-size: min(max(var(--art-fit), var(--art-cover)), var(--art-cap));
+  /* Unitless on purpose: the global --line-height is absolute and would not
+     scale with font-size, squashing the art vertically. 1.2 = 2x the advance,
+     which reproduces the source's cell proportions. */
+  line-height: 1.2;
+  white-space: pre;
+  margin: 0;
+  /* Scenery, not content: it cannot be selected, dragged or hovered, so a stray
+     drag never highlights ten thousand punctuation marks. header-art.js listens
+     on the window instead, which is why the melt still works. */
+  -webkit-user-select: none;
+  user-select: none;
+  pointer-events: none;
+  -webkit-user-drag: none;
+}
+
+/**
+ * Room for secrets.
+ *
+ * Individual cells can be opted back in later -- give a span this class (from
+ * the build script, or at runtime) and it becomes selectable and clickable
+ * again while the rest of the art stays inert. Wrap it in a real <a>, or add a
+ * label, if it should be reachable by keyboard and screen readers: the <pre>
+ * itself is aria-hidden, so anything meant to be found needs its own affordance.
+ */
+.header-art .secret {
+  pointer-events: auto;
+  -webkit-user-select: text;
+  user-select: text;
+  cursor: pointer;
+}
+
+/**
+ * Portrait: a 2.34:1 image cannot fill a taller-than-wide screen at any crop
+ * worth having. Let the hero collapse to the art's own height, show the whole
+ * width, and dissolve the bottom edge so the terminal below reads as a
+ * continuation rather than a second slab.
+ */
+@media (max-aspect-ratio: 1/1) {
+  .home-hero {
+    height: auto;
+  }
+  .header-art-wrap {
+    position: static;
+    display: flex;
+  }
+  .header-art {
+    /* No font-size override: the base rule already clamps to --art-cap here,
+       which crops ~15% a side and buys the art half again as much height. At a
+       true fit the band is only ~166px on a phone and reads as a thin strip. */
+    -webkit-mask-image: linear-gradient(to bottom, #000 68%, transparent 100%);
+    mask-image: linear-gradient(to bottom, #000 68%, transparent 100%);
+  }
+}
+
+/**
+ * THE SITE GUIDE, INSIDE THE ART
+ *
+ * On the homepage the guide lives in the hero, low and to the left -- clear of
+ * both the terminal (top-right) and the figure (centre). It is dressed as
+ * terminal output rather than a navigation bar so it reads as part of the same
+ * machine, and it carries the same per-glyph halo the terminal uses so the art
+ * stays visible between its letters.
+ */
+.home-hero #site-guide {
+  position: absolute;
+  left: 3vw;
+  bottom: 6%;
+  z-index: 1;
+  width: auto;
+  margin: 0;
+  padding: 0;
+  border: none;
+  text-align: left;
+  font-size: 0.9375rem;
+}
+
+.home-hero #site-guide summary,
+.home-hero #site-guide a {
+  text-shadow:
+    0 0 4px var(--background-color),
+    0 0 4px var(--background-color),
+    0 0 2px var(--background-color);
+}
+
+/* Reads as a command, not a link. */
+.home-hero #site-guide summary {
+  text-decoration: none;
+  color: var(--accent);
+  font-weight: var(--font-weight-medium);
+}
+
+.home-hero #site-guide summary::before {
+  content: "are You lost? - ";
+  color: var(--text-color-alt);
+  /* Its own keyframes so it can keep its dimmer resting tone, but the same
+     duration and delay as the label, so the two pulse as one phrase. */
+  animation: red-blink-dim 11s ease-in-out infinite;
+  animation-delay: -7.5s;
+}
+
+@keyframes red-blink-dim {
+  0%, 88%, 100% { color: var(--text-color-alt); }
+  93%           { color: var(--art-red); }
+}
+
+/* Only the label is underlined, so the lead-in reads as speech rather than as
+   part of the link. The decoration lives on the span because a parent's
+   underline would be drawn straight through ::before. */
+.toc-dropdown summary .guide-label {
+  text-decoration: underline;
+  text-decoration-thickness: var(--border-thickness);
+}
+
+/* Same slow, staggered red pulse the terminal prompt carries. */
+.home-hero #site-guide summary .guide-label {
+  animation: red-blink 11s ease-in-out infinite;
+  animation-delay: -7.5s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .home-hero #site-guide summary .guide-label,
+  .home-hero #site-guide summary::before { animation: none; }
+}
+
+.home-hero #site-guide[open] summary::after {
+  content: "";
+}
+
+.home-hero #site-guide .site-guide ul {
+  padding-left: 2ch;
+}
+
+.home-hero #site-guide li + li {
+  margin-top: 0;
+}
+
+.home-hero #site-guide li::before {
+  content: "- ";
+  color: var(--text-color-alt);
+}
+
+.home-hero #site-guide a {
+  color: var(--text-color);
+  text-decoration: none;
+}
+
+.home-hero #site-guide a:hover,
+.home-hero #site-guide a:focus-visible {
+  color: var(--accent);
+  text-decoration: underline;
+}
+
+/* Portrait: back into the flow, under the dissolved edge of the art. */
+@media (max-aspect-ratio: 1/1) {
+  .home-hero #site-guide {
+    position: static;
+    padding: 0 1ch;
+    margin-top: var(--line-height);
+  }
+}
+
+/**
+ * COLOUR
+ *
+ * Two independent axes, composed with nested color-mix so the whole piece stays
+ * theme-aware and picks up the mood palettes for free:
+ *
+ *   --t  tone     how much ink the glyph puts down; baked in at build time,
+ *                 which preserves the image's tonal structure.
+ *   --r  redness  how far that cell leans toward the source art's red; driven
+ *                 at runtime by header-art.js so the colour never sits still.
+ *
+ * Setting them as custom properties rather than 8x4 combined classes keeps this
+ * to twelve rules and lets JS swap one short className per cell.
+ */
+:root {
+  --art-red: #ff3b4e;
+}
+
+.header-art span {
+  color: color-mix(
+    in srgb,
+    color-mix(in srgb, var(--art-red) var(--r, 0%), var(--accent))
+    var(--t, 100%),
+    transparent
+  );
+}
+
+.header-art .k0 { --t: 14%; }
+.header-art .k1 { --t: 26%; }
+.header-art .k2 { --t: 38%; }
+.header-art .k3 { --t: 50%; }
+.header-art .k4 { --t: 62%; }
+.header-art .k5 { --t: 74%; }
+.header-art .k6 { --t: 87%; }
+.header-art .k7 { --t: 100%; }
+
+.header-art .r1 { --r: 35%; }
+.header-art .r2 { --r: 70%; }
+.header-art .r3 { --r: 100%; }
+
+@media (max-width: 60ch) {
+  /* At 220 columns a phone lands near a 3px glyph. It reads as texture rather
+     than characters, which is the honest tradeoff -- the art's edges carry real
+     image, so cropping columns would lose part of the picture. */
+  .header-art-wrap { margin-bottom: calc(var(--line-height) * 0.5); }
+}
+
 .header h1 {
   margin: 0 0 calc(var(--line-height) * 0.5);
   line-height: calc(2 * var(--line-height));
@@ -332,8 +638,6 @@ details.details-plain {
 }
 .toc-dropdown summary {
   list-style: none;
-  text-decoration: underline;
-  text-decoration-thickness: var(--border-thickness);
   cursor: pointer;
 }
 details.details-plain {
@@ -870,6 +1174,48 @@ label input {
 }
 
 /* ============================================================
+   THE RED BLINK, SITE-WIDE
+
+   The homepage art blinks individual characters red (header-art.js). The rest
+   of the site echoes it on its accent marks so the whole place feels like one
+   machine rather than one clever page.
+
+   Same photosensitivity rules as the art: a long cycle, only a brief moment
+   lit, a gentle ramp in and out, and staggered delays so marks never pulse in
+   unison. Nothing here strobes, and it all stops under reduced motion.
+   ============================================================ */
+
+@keyframes red-blink {
+  0%, 88%, 100% { color: inherit; }
+  93%           { color: var(--art-red); }
+}
+
+.journal-tag,
+.archive-row .archive-date,
+.tty-prompt {
+  animation: red-blink 9s ease-in-out infinite;
+}
+
+/* Staggered so no two marks light together. Prime-ish offsets keep the pattern
+   from visibly repeating. */
+.journal-index li:nth-child(3n) .journal-tag,
+.archive-row:nth-child(3n) .archive-date { animation-delay: -1.7s; }
+.journal-index li:nth-child(3n+1) .journal-tag,
+.archive-row:nth-child(3n+1) .archive-date { animation-delay: -4.3s; }
+.journal-index li:nth-child(3n+2) .journal-tag,
+.archive-row:nth-child(3n+2) .archive-date { animation-delay: -6.9s; }
+
+.tty-prompt { animation-duration: 11s; animation-delay: -2.5s; }
+
+@media (prefers-reduced-motion: reduce) {
+  .journal-tag,
+  .archive-row .archive-date,
+  .tty-prompt {
+    animation: none;
+  }
+}
+
+/* ============================================================
    TEXT THAT MISBEHAVES
    ============================================================ */
 
@@ -1040,25 +1386,57 @@ label input {
    door. Declared after .tty so it wins at equal specificity.
    ------------------------------------------------------------ */
 
+/**
+ * No chrome at all: this is text standing in the art, not a panel resting on
+ * top of it. It sits in the upper-centre, which is the art's negative space
+ * (density 15/100 there, against 82 across the bottom), so the figure below
+ * stays intact.
+ */
 .tty-hero {
-  margin: 0 0 calc(var(--line-height) * 2);
-  padding: var(--line-height) 1ch;
-  border: var(--border-thickness) solid var(--text-color);
-  border-top: var(--border-thickness) solid var(--text-color);
+  position: absolute;
+  top: 6%;
+  right: 3vw;
+  left: auto;
+  transform: none;
+  z-index: 1;
+  /* Top-right, clear of the figure: the subject sits around columns 79-113 of
+     220, so the right margin is the one place a block of text does not land on
+     it or on the centre of the composition. */
+  width: min(60ch, 46vw);
+  margin: 0;
+  padding: 0;
+  border: none;
+  background: none;
   font-size: 0.9375rem;
-  background: var(--background-color);
+  text-align: left;
 }
 
-/* The boot output is the homepage's content, so let it show in full rather
-   than scrolling inside a short window. */
+/**
+ * The halo is what makes the terminal read as baked into the art rather than
+ * pasted over it: each glyph carries its own small pool of page colour, so the
+ * art stays visible in the gaps between letters instead of being hidden behind
+ * a rectangle. header-art.js separately dims the cells behind this box, with a
+ * ragged noise-driven falloff.
+ */
+.tty-hero .tty-line,
+.tty-hero .tty-prompt,
+.tty-hero .tty-input {
+  text-shadow:
+    0 0 4px var(--background-color),
+    0 0 4px var(--background-color),
+    0 0 2px var(--background-color);
+}
+
+/* Boot is only a few lines now, but `help` and `cat` are not: scroll them
+   inside the terminal so it never outgrows the hero. */
 .tty-hero .tty-out {
-  max-height: calc(var(--line-height) * 30);
-  margin-bottom: var(--line-height);
+  max-height: calc(var(--line-height) * 16);
+  margin-bottom: calc(var(--line-height) * 0.5);
 }
 
 .tty-hero .tty-prompt-row {
   padding-top: calc(var(--line-height) * 0.5);
-  border-top: 1px solid var(--background-color-alt);
+  border-top: none;
 }
 
 /* A block cursor that rests after the prompt until the reader types. */
@@ -1066,13 +1444,42 @@ label input {
   caret-shape: block;
 }
 
+/* Portrait: the hero is no longer a fixed-height stage, so the terminal
+   returns to normal flow and sits in the art's dissolved lower edge. */
+@media (max-aspect-ratio: 1/1) {
+  .tty-hero {
+    position: static;
+    transform: none;
+    width: auto;
+    padding: 0 1ch;
+    margin-top: calc(var(--line-height) * -2);
+  }
+}
+
 @media (max-width: 60ch) {
   .tty-hero {
-    padding: calc(var(--line-height) * 0.75) 1ch;
     font-size: 0.875rem;
   }
   .tty-hero .tty-out {
-    max-height: calc(var(--line-height) * 22);
+    max-height: calc(var(--line-height) * 14);
+  }
+}
+
+/**
+ * Accessibility floor. When the reader has asked for more contrast or less
+ * transparency, the intermingling is exactly the wrong thing to give them:
+ * drop the halo and put the terminal back on a solid ground.
+ */
+@media (prefers-contrast: more), (prefers-reduced-transparency: reduce) {
+  .tty-hero {
+    background: var(--background-color);
+    padding: var(--line-height) 1ch;
+    border: var(--border-thickness) solid var(--text-color);
+  }
+  .tty-hero .tty-line,
+  .tty-hero .tty-prompt,
+  .tty-hero .tty-input {
+    text-shadow: none;
   }
 }
 

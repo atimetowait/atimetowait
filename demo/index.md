@@ -4,6 +4,7 @@ subtitle: freya langley // aCadogan
 lang: en
 toc-title: Site Guide
 terminal-home: true
+bare-header: true
 ---
 <hr>
 
