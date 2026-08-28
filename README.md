@@ -1,4 +1,4 @@
-Hey :) im alice. this is the source code of my site
+Hey :) im alice. this is the source code of my personal site
 
 some credits due:
 
