@@ -34,10 +34,21 @@ The homepage's own full-bleed portrait is a separate, older file
 
 Unlike the homepage's full-viewport portrait, this art sits as a faint,
 fixed backdrop behind the page — bold in the margins, and only lightly
-present behind the text column itself, so it doesn't fight readability. It's
-tinted and animated by the same system as the homepage art (mood colour,
-theme, the ambient twinkle, the red blink, melting under the cursor) with no
-extra work on your end.
+present behind the text column itself, so it doesn't fight readability. It
+picks up the mood colour and theme exactly like the homepage art does, with
+no extra work on your end.
+
+It is *not* animated the way the homepage is. The homepage gives every
+character its own `<span>` so `src/header-art.js` can melt cells under the
+pointer; a backdrop instead merges each run of same-tone characters into one
+span (identical on screen, ~87% fewer DOM nodes on the mirrored pieces) and
+runs no JavaScript at all. Its movement — a slow drift, a scanline sweep, and
+a twinkle/blink on a sparse subset of cells tagged during the build — is pure
+CSS on the compositor. See BACKDROP MOTION in `src/index.css`.
+
+That split exists because a backdrop renders at roughly 5–9px per glyph, a
+third of the homepage's size, behind a mask at ~34% opacity: per-character
+detail there costs a great deal and cannot be seen.
 
 ## Building it
 

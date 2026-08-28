@@ -1228,6 +1228,13 @@ label input {
   justify-content: center;
   overflow: hidden;
   pointer-events: none;
+  /* This is a fixed, full-viewport layer sitting behind a page that scrolls, and
+     it holds thousands of nodes. Without containment the browser is free to walk
+     back into that subtree on scroll; `contain` promises it cannot affect layout
+     or paint outside its own box, so scrolling composites it instead of redrawing
+     it. The homepage never needed this -- its art is absolutely positioned inside
+     a 100dvh hero on a page that does not scroll at all. */
+  contain: layout paint;
   /* The cleared reading column only ever sees this at its 0.22 mask multiplier
      (below), so the 10%-before-4.5:1-fails ceiling from the comment above caps
      this at ~0.45 -- 0.34 leaves a bit of margin while reading noticeably
@@ -1271,6 +1278,88 @@ label input {
 }
 :root[data-theme="dark"] .art-backdrop {
   opacity: 0.4;
+}
+
+/* ------------------------------------------------------------
+   BACKDROP MOTION
+
+   The backdrops used to be animated the way the homepage still is: JS walking
+   every cell every frame. At 65-83k cells that was the single most expensive
+   thing on these pages, and it bought detail nobody can resolve -- a backdrop
+   renders at roughly 5-9px per glyph, a third of the homepage's size, behind a
+   mask at ~34% opacity.
+
+   So the movement moved to the compositor. Everything below animates only
+   `transform` or `opacity` on either one layer or several hundred build-tagged
+   spans (scripts/build-header-art.py writes tw0..tw5 / rb0..rb3), which the GPU
+   handles without touching the main thread. No JS runs on these pages at all.
+
+   Two things that lived here originally are gone. A scanline sweep (one
+   pseudo-element, one moving gradient) read as a bar travelling through the
+   margins -- motion in the corner of your eye while reading, worse than the
+   twinkle it was meant to complement. And a slow whole-piece drift/breathe
+   (`transform: scale()` on a masked layer holding several thousand tiny
+   glyphs) turned out to be doing the same thing for a subtler reason: mask +
+   continuous scale forces the compositor to re-rasterise that mask edge
+   every frame, which on this much content showed up as a faint travelling
+   seam -- exactly the "still noticeable" lines that persisted after the
+   scanline alone was pulled. Both are replaced by leaning harder on the
+   twinkle/blink below: it is scoped to individual glyphs, so nothing about
+   it depends on transforming the whole masked layer.
+   ------------------------------------------------------------ */
+
+/* Twinkle and blink, on the sparse subset tagged at build time. Phase buckets
+   exist so nothing ever pulses in unison -- the same photosensitivity rule the
+   old JS followed: long cycles, a brief moment lit, and a gentle ramp. */
+.art-backdrop .header-art [class*="tw"],
+.art-backdrop .header-art [class*="rb"] {
+  animation-iteration-count: infinite;
+  animation-timing-function: ease-in-out;
+}
+
+.art-backdrop .header-art .tw0,
+.art-backdrop .header-art .tw1,
+.art-backdrop .header-art .tw2,
+.art-backdrop .header-art .tw3,
+.art-backdrop .header-art .tw4,
+.art-backdrop .header-art .tw5 {
+  animation-name: art-twinkle;
+  animation-duration: 6s;
+}
+.art-backdrop .header-art .tw1 { animation-delay: -1s; animation-duration: 7s; }
+.art-backdrop .header-art .tw2 { animation-delay: -2s; animation-duration: 8s; }
+.art-backdrop .header-art .tw3 { animation-delay: -3s; animation-duration: 9s; }
+.art-backdrop .header-art .tw4 { animation-delay: -4s; animation-duration: 7.5s; }
+.art-backdrop .header-art .tw5 { animation-delay: -5s; animation-duration: 8.5s; }
+
+@keyframes art-twinkle {
+  0%, 82%, 100% { opacity: 1; }
+  91%           { opacity: 0.25; }
+}
+
+.art-backdrop .header-art .rb0,
+.art-backdrop .header-art .rb1,
+.art-backdrop .header-art .rb2,
+.art-backdrop .header-art .rb3 {
+  animation-name: art-blink;
+  animation-duration: 11s;
+}
+.art-backdrop .header-art .rb1 { animation-delay: -3.7s; animation-duration: 13s; }
+.art-backdrop .header-art .rb2 { animation-delay: -7.3s; animation-duration: 9s; }
+.art-backdrop .header-art .rb3 { animation-delay: -5.5s; animation-duration: 10.5s; }
+
+@keyframes art-blink {
+  0%, 88%, 100% { color: inherit; }
+  93%           { color: var(--art-red); }
+}
+
+/* Same floor the rest of the sheet keeps: a reader who asked for less motion
+   gets the art whole and still, not half-animated. */
+@media (prefers-reduced-motion: reduce) {
+  .art-backdrop .header-art [class*="tw"],
+  .art-backdrop .header-art [class*="rb"] {
+    animation: none;
+  }
 }
 
 /* Accessibility floor, same precedent as .tty-hero's halo: a reader who has

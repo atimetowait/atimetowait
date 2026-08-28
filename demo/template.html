@@ -132,8 +132,11 @@ $include-after$
 $endfor$
   <div class="debug-grid"></div>
   <script src="/src/index.js" defer></script>
-  <script src="/src/header-art.js" defer></script>
 $if(terminal-home)$
+  <!-- Homepage only. The per-page backdrops are animated entirely by CSS
+       (see BACKDROP MOTION in index.css), so these pages neither fetch nor
+       parse this file -- it exists for the hero's melt, tear and boot wipe. -->
+  <script src="/src/header-art.js" defer></script>
   <script src="/src/terminal.js" defer></script>
 $endif$
 </body>

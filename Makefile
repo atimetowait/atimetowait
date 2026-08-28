@@ -60,13 +60,25 @@ demo/header-art.generated.html: demo/header-art.txt scripts/build-header-art.py
 # homepage's full-bleed hero.
 #
 # Per-piece flare: most art leaves this at the --flare default (1) via
-# FLARE_<name> being unset. Set one below to make a specific piece's cells
-# blink and twinkle more often than the site default -- see --flare's help
+# FLARE_<name> being unset. Set one below to make a specific piece livelier --
+# it scales how many of that piece's cells are tagged (at build time) for the
+# CSS twinkle and red blink, so it costs nothing at runtime. See --flare's help
 # in scripts/build-header-art.py.
 FLARE_myownkin=1.6
 
+# Per-piece tone tiers: most art leaves this at the --tiers default (8) via
+# TIERS_<name> being unset. spiritual_instability's detail is genuinely
+# dithered rather than mostly-flat-fill like the others, so run-merging alone
+# only got it to ~59% fewer spans against their 86-94%. Measured at real size
+# (5-9px, ~34% opacity, masked): tiers=3 is visually indistinguishable from
+# the default 8 -- confirmed by diffing screenshots, not eyeballing a shrunk
+# thumbnail, which is misleading here -- while cutting spans a further 50%,
+# 26,995 -> 13,334, in line with the other four pieces. See --tiers's help in
+# scripts/build-header-art.py.
+TIERS_spiritual_instability=3
+
 demo/art/%.generated.html: demo/art/%.txt scripts/build-header-art.py
-	python3 scripts/build-header-art.py --source $< --output $@ --class art-backdrop $(if $(FLARE_$*),--flare=$(FLARE_$*))
+	python3 scripts/build-header-art.py --source $< --output $@ --class art-backdrop $(if $(FLARE_$*),--flare=$(FLARE_$*)) $(if $(TIERS_$*),--tiers=$(TIERS_$*))
 
 musings/index.html: demo/musings.generated.md demo/template.html Makefile $(ART_HTML)
 	mkdir -p musings
@@ -92,8 +104,20 @@ musings/%/index.html: demo/musings/%.md demo/template.html Makefile $(ART_HTML)
 	mkdir -p musings/$*
 	$(JOURNAL_PANDOC) $(call art_flag,$*) -Vbodyclass=journal-entry-page -i demo/musings/$*.md -o $@
 
+# live-server (flake.nix's devShell) gives live-reload on file change. Where
+# it isn't on PATH -- no Nix/direnv, e.g. this sandbox -- fall back to
+# scripts/dev-server.py, which reimplements entr + live-server's rebuild-and-
+# reload loop with nothing but the standard library. PORT is overridable
+# (`make serve PORT=9000`); dev-server.py defaults to the same 8000.
+PORT ?= 8000
+
 serve: all
-	live-server --open=/ --host=127.0.0.1 .
+	@if command -v live-server >/dev/null 2>&1; then \
+		live-server --open=/ --host=127.0.0.1 .; \
+	else \
+		echo "live-server not found on PATH (see flake.nix) -- using scripts/dev-server.py instead (same live-reload behaviour, no install needed)."; \
+		python3 scripts/dev-server.py --port $(PORT); \
+	fi
 
 watch:
 	printf '%s\n' demo/index.md demo/bookkeeping.md demo/sightseeing.md demo/listen.md demo/template.html demo/musings.generated.md demo/archive.generated.md demo/header-art.txt demo/art/*.txt Makefile scripts/build-musings-index.py scripts/build-header-art.py | entr -n make
