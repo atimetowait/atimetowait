@@ -1235,35 +1235,56 @@ label input {
      it. The homepage never needed this -- its art is absolutely positioned inside
      a 100dvh hero on a page that does not scroll at all. */
   contain: layout paint;
-  /* The cleared reading column only ever sees this at its 0.22 mask multiplier
-     (below), so the 10%-before-4.5:1-fails ceiling from the comment above caps
-     this at ~0.45 -- 0.34 leaves a bit of margin while reading noticeably
-     brighter in the margins, where there's no text to fight at all. */
-  opacity: 0.34;
 
   /* --clear is a half-width, so the cleared band is 2x it -- wider than
      body's 80ch/2 = 40ch, so the column itself is never in the fully-clear
      zone, only ever fading through the feather at its very edges. */
   --clear: 42ch;
   --feather: 8ch;
-  -webkit-mask-image: linear-gradient(
+}
+
+/* The reading-column fade used to be a mask-image directly on .art-backdrop --
+   correct, but masking an element forces the browser to render its whole
+   subtree to an offscreen buffer before compositing it through the mask, and
+   this subtree holds thousands of nodes with hundreds of them animating at
+   any moment (BACKDROP MOTION below). Chromium in particular seems to
+   re-flatten that buffer on every animated frame rather than compositing
+   each span independently, which read as poor performance and a visible
+   load-in stagger; Firefox's renderer tolerates it far better.
+   
+   An empty overlay achieves the same fade without masking the content at
+   all: a plain background gradient, on a pseudo-element with no descendants
+   of its own, painted on top of the art instead of clipping it. Nothing
+   about the art's own compositing changes, so the animated spans stay cheap
+   regardless of engine. */
+.art-backdrop::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background-image: linear-gradient(
     to right,
-    #000 0,
-    #000 calc(50% - var(--clear) - var(--feather)),
-    rgba(0, 0, 0, 0.22) calc(50% - var(--clear)),
-    rgba(0, 0, 0, 0.22) calc(50% + var(--clear)),
-    #000 calc(50% + var(--clear) + var(--feather)),
-    #000 100%
+    transparent 0,
+    transparent calc(50% - var(--clear) - var(--feather)),
+    color-mix(in srgb, var(--background-color) 78%, transparent) calc(50% - var(--clear)),
+    color-mix(in srgb, var(--background-color) 78%, transparent) calc(50% + var(--clear)),
+    transparent calc(50% + var(--clear) + var(--feather)),
+    transparent 100%
   );
-  mask-image: linear-gradient(
-    to right,
-    #000 0,
-    #000 calc(50% - var(--clear) - var(--feather)),
-    rgba(0, 0, 0, 0.22) calc(50% - var(--clear)),
-    rgba(0, 0, 0, 0.22) calc(50% + var(--clear)),
-    #000 calc(50% + var(--clear) + var(--feather)),
-    #000 100%
-  );
+}
+
+/* The base opacity moved here from .art-backdrop itself: the wrapper now also
+   holds the overlay above, and that overlay must render at full strength to
+   actually cover the reading column -- if opacity stayed on the shared
+   parent it would wash out the cover along with the art.
+   
+   The cleared reading column only ever sees the art at (1 - 0.78) = 22% of
+   this, matching the mask's old 0.22 multiplier, so the 10%-before-4.5:1-
+   fails ceiling documented above still caps this at ~0.45 -- 0.34 leaves a
+   bit of margin while reading noticeably brighter in the margins, where
+   there's no text to fight at all. */
+.art-backdrop .header-art {
+  opacity: 0.34;
 }
 
 /* Dark theme has more contrast headroom to spend (see the table above), so it
@@ -1272,11 +1293,11 @@ label input {
    the light value lives on bare :root, and this is a second explicit
    assignment for the dark case, not the only one. */
 @media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) .art-backdrop {
+  :root:not([data-theme="light"]) .art-backdrop .header-art {
     opacity: 0.4;
   }
 }
-:root[data-theme="dark"] .art-backdrop {
+:root[data-theme="dark"] .art-backdrop .header-art {
   opacity: 0.4;
 }
 

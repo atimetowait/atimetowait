@@ -5,3 +5,7 @@
 
 # Nix / direnv build output
 result
+
+# Python bytecode cache
+__pycache__/
+*.pyc
