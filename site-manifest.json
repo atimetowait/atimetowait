@@ -1,5 +1,5 @@
 {
-  "generated": "2026-08-27",
+  "generated": "2026-08-29",
   "sections": [
     {
       "name": "home",
@@ -43,6 +43,17 @@
       ],
       "mood": "bone",
       "href": "/musings/thisbias/"
+    },
+    {
+      "slug": "mercurial",
+      "title": "MERCURIAL",
+      "summary": "MERCURIAL",
+      "date": "2026-08-27",
+      "tags": [
+        "oh...she knows what she is doing"
+      ],
+      "mood": "bone",
+      "href": "/musings/mercurial/"
     },
     {
       "slug": "spiritual_instability",

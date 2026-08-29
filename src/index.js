@@ -241,6 +241,18 @@ function initLineReveal() {
   // Only hide the lines once we know we can reveal them again.
   entry.classList.add("reveal-armed");
 
+  // The very last line has nothing after it to build anticipation for, and
+  // it's the one line where "wait until scroll says it's time" is actually
+  // fragile: it sits closest to the end of the page, where there's the least
+  // room left to scroll, and on a short entry the whole piece can already
+  // fit on screen with nothing to scroll at all. Chasing that with scroll/
+  // resize/font-load listeners (tried first) just traded one race for
+  // several -- simpler and actually reliable is to never hide it at all.
+  const last = lines.pop();
+  last.classList.add("is-visible");
+
+  if (!lines.length) return;
+
   const observer = new IntersectionObserver(
     (records) => {
       for (const record of records) {

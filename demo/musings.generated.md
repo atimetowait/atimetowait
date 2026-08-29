@@ -12,6 +12,10 @@ bare-header: true
 <ul>
 <li data-mood="bone"><span class="journal-date">2076-02-14</span> · <a href="/musings/thisbias/">this bias is beginning to show</a> · <span class="journal-tag">NULLED</span></li>
 </ul>
+<h2>August 2026</h2>
+<ul>
+<li data-mood="bone"><span class="journal-date">2026-08-27</span> · <a href="/musings/mercurial/">MERCURIAL</a> · <span class="journal-tag">oh...she knows what she is doing</span></li>
+</ul>
 <h2>July 2026</h2>
 <ul>
 <li data-mood="bone"><span class="journal-date">2026-07-02</span> · <a href="/musings/spiritual_instability/">A movement of spiritual instability</a> · <span class="journal-tag">insync.avi</span></li>
