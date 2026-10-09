@@ -746,6 +746,14 @@ th {
   font-size: 0.9375rem;
 }
 
+.home-hero #site-guide summary,
+.home-hero #site-guide a {
+  text-shadow:
+    0 0 4px var(--background-color),
+    0 0 4px var(--background-color),
+    0 0 2px var(--background-color);
+}
+
 /* Reads as a command, not a link. */
 .home-hero #site-guide summary {
   text-decoration: none;
@@ -1816,7 +1824,17 @@ label input {
   font-size: 0.875rem;
   border: 1px solid var(--accent);
   color: var(--text-color);
+  /* Same reasoning as .tty-hero's own outline: over the art a flat border can
+     vanish where it crosses a dense patch, so it carries a pool of page colour
+     with it. Wider and doubled compared to the terminal's own box, because a
+     chip is a small target sitting at the very bottom edge of that box -- often
+     right where header-art.js's dim shadow is already feathering back out into
+     full-strength art. */
   background: none;
+  box-shadow:
+    0 0 0 2px var(--background-color),
+    0 0 6px 3px var(--background-color),
+    0 0 10px 5px var(--background-color);
 }
 
 .tty-chip::before {
@@ -2212,8 +2230,40 @@ label input {
   background: none;
   border: 1px solid var(--accent);
   padding: calc(var(--line-height) * 0.5) 1ch;
+  /* Same trick as the halo below, applied to the outline itself: without it
+     the border reads fine over the faint backdrop but can vanish for a
+     stretch wherever it crosses a dense, similarly-toned patch of the art.
+     Two layers, not one: a hard 0-blur ring gives the line a fully solid
+     backing right at the edge, and the soft blur past it is what actually
+     blends that ring into the art instead of reading as a hard box. */
+  box-shadow:
+    0 0 0 1px var(--background-color),
+    0 0 4px 1px var(--background-color);
   font-size: 0.9375rem;
   text-align: left;
+}
+
+/**
+ * The halo is what makes the terminal read as baked into the art rather than
+ * pasted over it: each glyph carries its own small pool of page colour, so the
+ * art stays visible in the gaps between letters instead of being hidden behind
+ * a rectangle. header-art.js separately dims the cells behind this box, with a
+ * ragged noise-driven falloff.
+ */
+.tty-hero .tty-line,
+.tty-hero .tty-prompt,
+.tty-hero .tty-input,
+.tty-hero .tty-chip {
+  text-shadow:
+    0 0 4px var(--background-color),
+    0 0 4px var(--background-color),
+    0 0 2px var(--background-color);
+}
+
+/* The idle caret is a solid block, not text, so it takes the halo as a
+   box-shadow rather than a text-shadow. */
+.tty-hero .tty-caret {
+  box-shadow: 0 0 4px 1px var(--background-color);
 }
 
 /* Boot is only a few lines now, but `help` and `cat` are not: scroll them
@@ -2270,8 +2320,8 @@ label input {
 
 /**
  * Accessibility floor. When the reader has asked for more contrast or less
- * transparency, intermingling with the art at all is the wrong thing to give
- * them, halo or not: put the terminal on a solid ground instead.
+ * transparency, the intermingling is exactly the wrong thing to give them:
+ * drop the halo and put the terminal back on a solid ground.
  */
 @media (prefers-contrast: more), (prefers-reduced-transparency: reduce) {
   .tty-hero {
@@ -2279,8 +2329,18 @@ label input {
     padding: var(--line-height) 1ch;
     border: var(--border-thickness) solid var(--text-color);
   }
+  .tty-hero .tty-line,
+  .tty-hero .tty-prompt,
+  .tty-hero .tty-input,
+  .tty-hero .tty-chip {
+    text-shadow: none;
+  }
+  .tty-hero .tty-caret {
+    box-shadow: none;
+  }
   .tty-hero .tty-chip {
     border: var(--border-thickness) solid var(--text-color);
+    box-shadow: none;
   }
 }
 
