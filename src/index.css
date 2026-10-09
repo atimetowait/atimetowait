@@ -625,34 +625,29 @@ th {
    */
   .home-hero .header-art {
     /**
-     * Zoomed well past a true cover fit, to clear the terminal outright
-     * rather than lean on its dim-shadow to soften an overlap -- the
-     * explicit priority now, ahead of how much of the figure stays visible.
+     * Full figure, real but partial gap -- a deliberate middle point chosen
+     * over two other shapes this hero went through and was pulled back from:
+     * a full-clearance crop (z=2.7) tight enough to cut the torso out of
+     * frame entirely to get there, and a true cover fit (z=1.0, zero crop)
+     * that left the head mostly behind the terminal with no gap at all.
+     * Zooming in to chase separation reads as the figure getting closer, not
+     * as it moving further away, however the maths on where it lands on
+     * screen works out -- so this stays close to a plain cover fit rather
+     * than pushing toward either extreme again.
      *
-     * The constraint underneath this hasn't changed: there are only 5 blank
-     * rows above the head in the drawing itself, so pushing it down means
-     * showing a smaller vertical slice (more zoom), and a smaller slice is
-     * also a narrower one. What moved is which side of that trade wins.
-     * Earlier passes capped the zoom where the crop stayed within the head's
-     * own tonal taper -- the soft gradient at its edges that is what reads
-     * as an oval rather than a block of $ -- which meant real, visible
-     * overlap with the terminal remained. Asked for the opposite trade this
-     * time: clear the terminal completely, even if the crop runs through
-     * that taper and the centre of the head reads as a solid fill rather
-     * than a gradient.
-     *
-     * 2.7 is chosen the same way the earlier ceiling was -- by printing the
-     * exact visible character grid at each candidate and reading it, not
-     * from the column-count arithmetic alone -- but solving a different
-     * question: not "how much zoom before the crop touches the taper" but
-     * "how much zoom clears the terminal with a real margin, and how far can
-     * that go before the shoulders (which start widening around row 18) are
-     * pulled into frame and need even more width than the head alone." Short
-     * of that row, the visible window only has to fit the head's own
-     * narrower core; past it, slack gets worse, not better. 2.7 sits just
-     * under that row.
+     * 1.383 is the same value landed on two passes ago: the most zoom that
+     * still keeps the head's full WIDTH in frame, with a small margin, on
+     * phones down to 360px wide (found by printing the actual visible
+     * character grid at each candidate and reading it, not by column-count
+     * arithmetic alone -- the same method used for every zoom value in this
+     * rule's history). It shows the figure down through the torso (row 34
+     * of 47), fills the hero edge to edge with no blank background, and
+     * leaves a real, visible overlap with the terminal -- the head starts
+     * at ~14.7% down the screen against the terminal's own ~21.6% edge --
+     * softened by the terminal's own dim-shadow (header-art.js) rather than
+     * eliminated.
      */
-    font-size: calc(var(--art-cover) * 2.7);
+    font-size: calc(var(--art-cover) * 1.383);
     /**
      * Re-centred on the head, not on the drawing's own geometry, on both axes.
      *
@@ -663,17 +658,17 @@ th {
      * this was never needed before.
      *
      * Vertical: shifts the visible window from the drawing's own vertical
-     * centre down to [row 0, row 17.41] -- all the way to the drawing's own
+     * centre down to [row 0, row 33.98] -- all the way to the drawing's own
      * top edge, which is what pushes the head as far down the screen as the
-     * zoom above allows. 17.41 (= 47 / 2.7) stays just short of row 18,
-     * where the figure starts widening into shoulders -- the choice this
-     * zoom is built around.
+     * zoom above allows, and up to 33.98 (= 47 / 1.383), just past the
+     * figure's own measured extent (row 33), so the whole figure stays in
+     * frame rather than being cropped away at the waist or shoulders.
      *
      * Both expressed as a percentage of the art's own rendered size, which is
      * what percentages in `transform` resolve against -- so these numbers
      * hold regardless of viewport size or the zoom factor above.
      */
-    transform: translate(6.82%, 31.48%);
+    transform: translate(6.82%, 13.85%);
   }
 }
 
