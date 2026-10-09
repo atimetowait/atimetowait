@@ -643,38 +643,41 @@ th {
      * max(fit, cover), never pushes it past; this overrides font-size
      * directly instead, which a more specific, later rule is free to do.
      *
-     * The zoom went through three earlier values -- 1.4242 (the max that kept
-     * the whole figure), then 1.3, then 1.15 by request, each step reading as
-     * a calmer, more zoomed-out frame. This step reverses that and pushes
-     * back up, because 1.15 still left the head's top edge under the
-     * terminal's chips row, and no amount of *this lever* alone -- zoom plus
-     * a vertical pan -- was ever going to clear it without first hitting a
-     * DIFFERENT ceiling: the head's own WIDTH.
+     * The zoom went through several earlier values, each answering a
+     * different ask: 1.4242 (the max that kept the whole figure), then 1.3
+     * and 1.15 for a calmer frame, then 1.383 -- the max that kept the
+     * head's full WIDTH in frame on a 360px phone, which was as far as pure
+     * zoom-plus-pan could go before it started cropping the head's own
+     * edges rather than clearing the terminal.
      *
-     * Vertical headroom above the head is fixed at 5 rows (of 47) by the
-     * drawing itself -- a property of the art, not something a transform can
-     * manufacture more of -- so pushing the head further down always means a
-     * smaller visible window, i.e. more zoom. But more zoom crops tighter on
-     * BOTH axes at once: the same factor that pushes the head down also
-     * narrows how many columns are visible, and the head (columns 82-108,
-     * 26 wide) eventually doesn't fit the width any more. On a 360px phone
-     * that ceiling is z=1.54; past it, the head's own edges start being cut
-     * off, which is a worse trade than leaving it under the terminal.
+     * This step crosses that line deliberately, but not all the way to
+     * where the maths alone would put it. Clearing the terminal outright was
+     * never possible while also keeping the head's full width, because the
+     * two crop together -- pushing the head down needs a smaller visible
+     * window (more zoom), and a smaller window is also narrower -- so a
+     * first pass at this went straight for the terminal's measured edge
+     * (z=2.35) and landed somewhere worse than "crops the head's outer
+     * edges": printing that crop's actual characters out showed the visible
+     * window (18 columns) narrower than the oval's OWN width at most of its
+     * rows (16-26, depending on row), so instead of trimming the edges it
+     * cut straight through the soft tonal taper that is what reads as an
+     * oval rather than a rectangle of $. Checked a few zoom levels the same
+     * way: the taper survives, thin but present, through about z=1.8; by
+     * z=2.2 it's gone, a solid block.
      *
-     * 1.383 is 3 columns short of that 360px ceiling -- as far as this can
-     * safely go while still keeping the whole head in frame, with a small
-     * margin, on every phone width tested down to 360px (390px clears with
-     * 5.4 columns to spare; a legacy 320px phone loses about a quarter of a
-     * column, imperceptible at this resolution). It still doesn't fully
-     * clear the terminal -- the head now starts at ~14.7% down the screen,
-     * the terminal's own chips row ends around 28%, so some overlap remains,
-     * softened by the terminal's own dim-shadow (header-art.js) the way it
-     * always has been. Clearing it outright would mean cropping into the
-     * head's own width, which is a different, bigger trade-off than "zoom
-     * out a little" -- worth a real conversation before doing that, not a
-     * silent crop.
+     * 1.8 is that empirical ceiling, not the arithmetic one -- chosen by
+     * printing the actual visible character grid at each candidate and
+     * reading it, the same way the earlier row/column bounds in this file
+     * were measured, because "how much of the taper can go before it stops
+     * reading as a head" isn't something the column-width arithmetic alone
+     * can answer. It still doesn't fully clear the terminal (see the
+     * shrunk-footprint changes alongside this one -- boot() in terminal.js,
+     * tighter .tty-out/.tty-chips/.tty-hero spacing here -- which close part
+     * of the remaining gap from the other side), but it goes further than
+     * 1.383 while staying the right side of the cliff a tighter crop falls
+     * off.
      */
-    font-size: calc(var(--art-cover) * 1.383);
+    font-size: calc(var(--art-cover) * 1.8);
     /**
      * Re-centred on the head, not on the drawing's own geometry, on both axes.
      *
@@ -683,19 +686,25 @@ th {
      * 95 -- fifteen columns left of that. At the base rule's mild landscape
      * crop (~12% a side) that offset is lost in the margin, which is why this
      * was never needed before. At this much tighter crop, a window centred on
-     * 110 lands past the head's own edge rather than on it.
+     * 110 lands past the head's own edge rather than on it -- and now that
+     * the crop is narrower than the head itself, this is what decides which
+     * of its edges give way: centred on 95, both sides lose roughly equally,
+     * rather than the crop drifting toward whichever side the grid's own
+     * centre happened to favour.
      *
      * Vertical: shifts the visible window from the drawing's own vertical
-     * centre down to [row 0, row 33.99] -- all the way to the drawing's own
+     * centre down to [row 0, row 26.11] -- all the way to the drawing's own
      * top edge, which is what pushes the head as far down the screen as the
-     * zoom above allows, and up to 33.99 (= 47 / 1.383), just past the
-     * figure's own measured extent (row 33).
+     * zoom above allows. 26.11 (= 47 / 1.8) is short of the figure's full
+     * extent (row 33) on purpose now: the window is the head and its
+     * immediate shoulders, not the whole figure, which is the vertical side
+     * of the same trade the horizontal crop is making.
      *
      * Both expressed as a percentage of the art's own rendered size, which is
      * what percentages in `transform` resolve against -- so these numbers
      * hold regardless of viewport size or the zoom factor above.
      */
-    transform: translate(6.82%, 13.84%);
+    transform: translate(6.82%, 22.22%);
   }
 }
 
@@ -1749,7 +1758,7 @@ label input {
   max-height: min(calc(var(--line-height) * 16), 42dvh);
   overflow-y: auto;
   overflow-x: auto;
-  margin-bottom: calc(var(--line-height) * 0.5);
+  margin-bottom: calc(var(--line-height) * 0.3);
   white-space: pre;
 }
 
@@ -1812,7 +1821,7 @@ label input {
   display: none;
   flex-wrap: wrap;
   gap: 1ch;
-  margin-top: calc(var(--line-height) * 0.5);
+  margin-top: calc(var(--line-height) * 0.3);
 }
 
 @media (hover: none) {
@@ -1822,7 +1831,11 @@ label input {
 }
 
 .tty-chip {
-  height: calc(var(--line-height) * 2);
+  /* 1.7, not 2: still 32.6px at the site's own 19.2px line-height, comfortably
+     clear of WCAG 2.5.8's 24px floor, trimmed from the original 2x (38.4px)
+     as part of shrinking the terminal's own footprint on mobile -- every
+     pixel here is a pixel more of the art visible beneath it. */
+  height: calc(var(--line-height) * 1.7);
   /* 1ch, not more: the four of them plus their gaps come to ~305px, and the
      terminal's inner width on a 390px phone is ~320px. Any looser and
      `whatami` wraps to a second row, which costs another 38px of a screen
@@ -2311,6 +2324,11 @@ label input {
     width: auto;
     transform: none;
     margin-top: 0;
+    /* Tighter than the shared 0.5 landscape uses: part of shrinking the
+       terminal's own footprint so more of the art beneath it clears, on the
+       one axis (portrait, mobile) where that footprint is competing with the
+       figure for space. Landscape keeps the roomier original. */
+    padding: calc(var(--line-height) * 0.35) 1ch;
   }
 }
 

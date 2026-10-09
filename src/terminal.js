@@ -617,7 +617,12 @@
     print("last login: whenever you got here. the dates don't mean much.", "tty-dim");
     printBlank();
     print("start with: home — or help for everything else", "tty-strong");
-    printBlank();
+    // No trailing printBlank() here any more -- it used to add a second gap
+    // before the prompt row on top of the padding-top .tty-hero .tty-prompt-row
+    // already carries for exactly that separation, doubling up for no reason
+    // and costing a full line of the hero's height on mobile, where that
+    // height is the terminal's footprint over the art. The words are
+    // unchanged; only the redundant whitespace is gone.
 
     // Focus only where a keyboard is actually attached -- autofocusing on a
     // phone would throw up the software keyboard before anything is read.
