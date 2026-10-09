@@ -643,15 +643,18 @@ th {
      * max(fit, cover), never pushes it past; this overrides font-size
      * directly instead, which a more specific, later rule is free to do.
      *
-     * 1.4242 = 47 / 33: 33 is the row the figure's own detail stops being
+     * 47 / 33 (1.4242) was the furthest this can be pushed while keeping the
+     * whole figure: 33 is the row the figure's own detail stops being
      * distinguishable from the drawing's background fill (measured by
-     * comparing each row's local contrast against clearly-background rows;
-     * it falls back to background-like levels right around there). Zooming
-     * to exactly this factor crops away only that backgroundfill tail --
-     * nothing of the figure itself -- while using all of the resulting
-     * extra room to push the head down screen.
+     * comparing each row's local contrast against clearly-background rows),
+     * so that zoom cropped only the background tail below it, nothing of the
+     * figure itself. Backed off to 1.3 by request -- a tighter crop reads as
+     * more "zoomed in" than the composition wants, and at the same cap on
+     * row 33 this gives up a little downward push (head starts a touch
+     * higher) for a visibly calmer frame and a lot more breathing room on
+     * the sides, since the horizontal crop eases by exactly the same factor.
      */
-    font-size: calc(var(--art-cover) * 1.4242);
+    font-size: calc(var(--art-cover) * 1.3);
     /**
      * Re-centred on the head, not on the drawing's own geometry, on both axes.
      *
@@ -663,16 +666,17 @@ th {
      * 110 lands past the head's own edge rather than on it.
      *
      * Vertical: shifts the visible window from the drawing's own vertical
-     * centre down to [row 0, row 33] -- all the way to the drawing's own top
-     * edge, which is what pushes the head as far down the screen as the
-     * zoom above allows, and up to row 33, which is the full figure with
-     * nothing cropped from above it.
+     * centre down to [row 0, row 36.15] -- all the way to the drawing's own
+     * top edge, which is what pushes the head as far down the screen as the
+     * zoom above allows, and up to 36.15 (= 47 / 1.3), which is the full
+     * figure plus a little more of the background below it than the 1.4242
+     * pass kept, since the gentler zoom has room to spare.
      *
      * Both expressed as a percentage of the art's own rendered size, which is
      * what percentages in `transform` resolve against -- so these numbers
      * hold regardless of viewport size or the zoom factor above.
      */
-    transform: translate(6.82%, 14.89%);
+    transform: translate(6.82%, 11.54%);
   }
 }
 
