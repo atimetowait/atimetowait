@@ -625,59 +625,42 @@ th {
    */
   .home-hero .header-art {
     /**
-     * Zoomed past a true cover fit, and panned, so the head clears the
-     * terminal instead of starting right under it.
+     * Zoomed past a true cover fit, and panned, so the head sits further
+     * down the screen instead of starting right under the terminal.
      *
-     * Plain cover fit (the previous rule here) stretches the ENTIRE drawing,
-     * all 47 rows, across the screen's height with nothing cropped. That
-     * puts the head -- which measures at rows 5-21 of the source art, well
-     * up near the top of the piece -- at only ~11% down the screen, directly
-     * behind the terminal (which runs from the top to ~28-30% down). No
-     * amount of panning a 1.0x-zoomed image can move it further down without
-     * running out of picture above it: there are only 5 blank rows above the
-     * head to begin with, a fixed property of the drawing, not something a
-     * transform can manufacture more of.
+     * Plain cover fit (font-size: var(--art-cover), nothing more) stretches
+     * the ENTIRE drawing, all 47 rows, across the screen's height with
+     * nothing cropped. That puts the head -- rows 5-21 of the source art,
+     * well up near the top of the piece -- at only ~11% down the screen.
+     * There are only 5 blank rows above the head in the drawing itself, a
+     * fixed property of the art, so pushing it down means showing a smaller
+     * vertical slice -- i.e. zooming in -- not just panning a 1.0x image.
+     * --art-cap can't do this (it only ever clamps font-size DOWN from
+     * max(fit, cover), never past it), so font-size is overridden directly.
      *
-     * So this also zooms in, which is what creates room to pan. --art-cap
-     * cannot do it -- that variable only ever clamps font-size DOWN from
-     * max(fit, cover), never pushes it past; this overrides font-size
-     * directly instead, which a more specific, later rule is free to do.
+     * How far to push that zoom turned out to have a real ceiling, found
+     * empirically rather than guessed: pushing hard enough to fully clear
+     * the terminal (tried at z=2.35, matched to the terminal's own measured
+     * edge) makes the visible window narrower than the head's OWN width at
+     * most of its rows -- confirmed by printing the actual visible character
+     * grid at that crop and reading it. That doesn't trim the head's outer
+     * edges, it cuts through the soft tonal taper that is what reads as an
+     * oval rather than a block of $. The taper survives, thin but present,
+     * through about z=1.8; by z=2.2 it's gone.
      *
-     * The zoom went through several earlier values, each answering a
-     * different ask: 1.4242 (the max that kept the whole figure), then 1.3
-     * and 1.15 for a calmer frame, then 1.383 -- the max that kept the
-     * head's full WIDTH in frame on a 360px phone, which was as far as pure
-     * zoom-plus-pan could go before it started cropping the head's own
-     * edges rather than clearing the terminal.
-     *
-     * This step crosses that line deliberately, but not all the way to
-     * where the maths alone would put it. Clearing the terminal outright was
-     * never possible while also keeping the head's full width, because the
-     * two crop together -- pushing the head down needs a smaller visible
-     * window (more zoom), and a smaller window is also narrower -- so a
-     * first pass at this went straight for the terminal's measured edge
-     * (z=2.35) and landed somewhere worse than "crops the head's outer
-     * edges": printing that crop's actual characters out showed the visible
-     * window (18 columns) narrower than the oval's OWN width at most of its
-     * rows (16-26, depending on row), so instead of trimming the edges it
-     * cut straight through the soft tonal taper that is what reads as an
-     * oval rather than a rectangle of $. Checked a few zoom levels the same
-     * way: the taper survives, thin but present, through about z=1.8; by
-     * z=2.2 it's gone, a solid block.
-     *
-     * 1.8 is that empirical ceiling, not the arithmetic one -- chosen by
-     * printing the actual visible character grid at each candidate and
-     * reading it, the same way the earlier row/column bounds in this file
-     * were measured, because "how much of the taper can go before it stops
-     * reading as a head" isn't something the column-width arithmetic alone
-     * can answer. It still doesn't fully clear the terminal (see the
-     * shrunk-footprint changes alongside this one -- boot() in terminal.js,
-     * tighter .tty-out/.tty-chips/.tty-hero spacing here -- which close part
-     * of the remaining gap from the other side), but it goes further than
-     * 1.383 while staying the right side of the cliff a tighter crop falls
-     * off.
+     * Even short of that cliff, 1.8 read as too tight a crop -- the point
+     * was to let the figure read as a figure beneath the terminal, not to
+     * frame just its densest core. 1.15 is the resting value: close to a
+     * plain cover fit (1.0), enough zoom to lift the head off the very top
+     * edge and give the composition some depth, but not enough to crop
+     * meaningfully into anything. It leaves real overlap with the terminal
+     * -- getting that fully clear needs either the 1.8-and-tighter crop
+     * (rejected above) or a much smaller terminal footprint than shrinking
+     * boot()/chips/.tty-hero's own padding (done alongside this) can
+     * reasonably get to -- and that overlap is what the terminal's own
+     * dim-shadow (header-art.js) exists to soften, the way it always has.
      */
-    font-size: calc(var(--art-cover) * 1.8);
+    font-size: calc(var(--art-cover) * 1.15);
     /**
      * Re-centred on the head, not on the drawing's own geometry, on both axes.
      *
@@ -686,25 +669,20 @@ th {
      * 95 -- fifteen columns left of that. At the base rule's mild landscape
      * crop (~12% a side) that offset is lost in the margin, which is why this
      * was never needed before. At this much tighter crop, a window centred on
-     * 110 lands past the head's own edge rather than on it -- and now that
-     * the crop is narrower than the head itself, this is what decides which
-     * of its edges give way: centred on 95, both sides lose roughly equally,
-     * rather than the crop drifting toward whichever side the grid's own
-     * centre happened to favour.
+     * 110 lands past the head's own edge rather than on it.
      *
      * Vertical: shifts the visible window from the drawing's own vertical
-     * centre down to [row 0, row 26.11] -- all the way to the drawing's own
+     * centre down to [row 0, row 40.87] -- all the way to the drawing's own
      * top edge, which is what pushes the head as far down the screen as the
-     * zoom above allows. 26.11 (= 47 / 1.8) is short of the figure's full
-     * extent (row 33) on purpose now: the window is the head and its
-     * immediate shoulders, not the whole figure, which is the vertical side
-     * of the same trade the horizontal crop is making.
+     * zoom above allows, and up to 40.87 (= 47 / 1.15), well past the
+     * figure's own extent (row 33) and into the surrounding background fill,
+     * since at this gentle a zoom there's room to spare on both sides of it.
      *
      * Both expressed as a percentage of the art's own rendered size, which is
      * what percentages in `transform` resolve against -- so these numbers
      * hold regardless of viewport size or the zoom factor above.
      */
-    transform: translate(6.82%, 22.22%);
+    transform: translate(6.82%, 6.52%);
   }
 }
 
