@@ -615,14 +615,15 @@
     // everything on request, so nothing is lost but the art stays visible.
     print("atimetowait — freya langley // aCadogan", "tty-strong");
     print("last login: whenever you got here. the dates don't mean much.", "tty-dim");
-    printBlank();
     print("start with: home — or help for everything else", "tty-strong");
-    // No trailing printBlank() here any more -- it used to add a second gap
-    // before the prompt row on top of the padding-top .tty-hero .tty-prompt-row
-    // already carries for exactly that separation, doubling up for no reason
-    // and costing a full line of the hero's height on mobile, where that
-    // height is the terminal's footprint over the art. The words are
-    // unchanged; only the redundant whitespace is gone.
+    // Neither blank line from here is left any more. The one between this
+    // and the prompt row doubled up with .tty-hero .tty-prompt-row's own
+    // padding-top, which already did that job; this one (between "last
+    // login" and "start with") was pure pacing, not separating anything
+    // that needed separating. Both cost a full line each of the hero's
+    // height on mobile, where that height is the terminal's footprint over
+    // the art -- every line here is a line more of the figure it covers.
+    // The words themselves are unchanged.
 
     // Focus only where a keyboard is actually attached -- autofocusing on a
     // phone would throw up the software keyboard before anything is read.

@@ -625,48 +625,55 @@ th {
    */
   .home-hero .header-art {
     /**
-     * A true cover fit -- the whole 47-row drawing, nothing cropped beyond
-     * the width loss cover-fit sizing already costs at this aspect ratio --
-     * is the resting value here, by request: "fully in view" outweighs
-     * pushing the head any further down the screen.
+     * Zoomed well past a true cover fit, to clear the terminal outright
+     * rather than lean on its dim-shadow to soften an overlap -- the
+     * explicit priority now, ahead of how much of the figure stays visible.
      *
-     * It wasn't the first thing tried. Pushing past 1.0 creates room to pan
-     * the head down (there are only 5 blank rows above it in the drawing
-     * itself, so moving it further means showing a smaller vertical slice,
-     * i.e. zooming in, not just panning a 1.0x image) and several values
-     * were tried in that direction -- up to 1.8, chosen as the empirical
-     * ceiling before the crop cuts into the oval's own tonal taper rather
-     * than just its outer edges (confirmed by printing the actual visible
-     * character grid and reading it, not by column-count arithmetic alone).
-     * But each step traded a closer look at the head for a smaller, more
-     * cropped view of it, which answers a different question than "is the
-     * whole figure visible."
+     * The constraint underneath this hasn't changed: there are only 5 blank
+     * rows above the head in the drawing itself, so pushing it down means
+     * showing a smaller vertical slice (more zoom), and a smaller slice is
+     * also a narrower one. What moved is which side of that trade wins.
+     * Earlier passes capped the zoom where the crop stayed within the head's
+     * own tonal taper -- the soft gradient at its edges that is what reads
+     * as an oval rather than a block of $ -- which meant real, visible
+     * overlap with the terminal remained. Asked for the opposite trade this
+     * time: clear the terminal completely, even if the crop runs through
+     * that taper and the centre of the head reads as a solid fill rather
+     * than a gradient.
      *
-     * At 1.0 the head still starts at only ~11% down the screen, behind
-     * most of the terminal -- by design now, not oversight: the brief was
-     * explicitly that the terminal covering that region is fine, since what
-     * it's covering there reads as the drawing's own dead space (the blank
-     * rows, and the head's own soft upper taper) rather than a hard crop
-     * into anything. The terminal's dim-shadow (header-art.js) still softens
-     * that overlap the way it always has.
+     * 2.7 is chosen the same way the earlier ceiling was -- by printing the
+     * exact visible character grid at each candidate and reading it, not
+     * from the column-count arithmetic alone -- but solving a different
+     * question: not "how much zoom before the crop touches the taper" but
+     * "how much zoom clears the terminal with a real margin, and how far can
+     * that go before the shoulders (which start widening around row 18) are
+     * pulled into frame and need even more width than the head alone." Short
+     * of that row, the visible window only has to fit the head's own
+     * narrower core; past it, slack gets worse, not better. 2.7 sits just
+     * under that row.
      */
-    font-size: var(--art-cover);
+    font-size: calc(var(--art-cover) * 2.7);
     /**
-     * Re-centred on the head, not on the drawing's own geometry.
+     * Re-centred on the head, not on the drawing's own geometry, on both axes.
      *
-     * A cover-fit crop is symmetric about the grid's centre column (110 of
-     * 220), but the head sits at columns 82-108, centred on 95 -- fifteen
-     * columns left of that. At the base rule's mild landscape crop (~12% a
-     * side) that offset is lost in the margin, which is why this was never
-     * needed before; at a phone's much tighter width crop it isn't.
+     * Horizontal: a cover-fit crop is symmetric about the grid's centre
+     * column (110 of 220), but the head sits at columns 82-108, centred on
+     * 95 -- fifteen columns left of that. At the base rule's mild landscape
+     * crop (~12% a side) that offset is lost in the margin, which is why
+     * this was never needed before.
      *
-     * 6.82% is a fraction of the art's own rendered width, which is what
-     * percentages in `transform` resolve against -- so it holds regardless
-     * of viewport size. No vertical term: at a true cover fit the rendered
-     * height matches the viewport exactly, so there's no vertical overflow
-     * left to pan within -- translateY would be a no-op here.
+     * Vertical: shifts the visible window from the drawing's own vertical
+     * centre down to [row 0, row 17.41] -- all the way to the drawing's own
+     * top edge, which is what pushes the head as far down the screen as the
+     * zoom above allows. 17.41 (= 47 / 2.7) stays just short of row 18,
+     * where the figure starts widening into shoulders -- the choice this
+     * zoom is built around.
+     *
+     * Both expressed as a percentage of the art's own rendered size, which is
+     * what percentages in `transform` resolve against -- so these numbers
+     * hold regardless of viewport size or the zoom factor above.
      */
-    transform: translateX(6.82%);
+    transform: translate(6.82%, 31.48%);
   }
 }
 
