@@ -661,11 +661,12 @@ th {
      * Vertical: 4.55% is the most this can shift without opening a gap --
      * it already puts row 0 (the drawing's own top edge) at the very top of
      * the hero, and there is no row above 0 to reveal in exchange for
-     * pushing further. 11.5% goes past that deliberately, by request, at a
-     * fixed zoom: the extra 6.95 points moves the art's own top edge 7.6%
+     * pushing further. 13.5% goes past that deliberately, by request, at a
+     * fixed zoom: the extra 8.95 points moves the art's own top edge 9.8%
      * of the viewport below the hero's top edge, which necessarily uncovers
      * that much of the hero's own background colour above it, since nothing
-     * else is there to show instead.
+     * else is there to show instead. This lands the head almost exactly on
+     * the terminal's own measured edge (~21.6%) -- touching, not past it.
      *
      * That background shows through more than just a strip at the very top,
      * though -- it is what the TERMINAL now sits on for part of its own
@@ -682,7 +683,7 @@ th {
      * what percentages in `transform` resolve against -- so these numbers
      * hold regardless of viewport size or the zoom factor above.
      */
-    transform: translate(6.82%, 11.5%);
+    transform: translate(6.82%, 13.5%);
   }
 }
 
