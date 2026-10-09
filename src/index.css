@@ -658,18 +658,30 @@ th {
      * crop (~12% a side) that offset is lost in the margin, which is why
      * this was never needed before.
      *
-     * Vertical: shifts the visible window from the drawing's own vertical
-     * centre down to [row 0, row 42.73] -- all the way to the drawing's own
-     * top edge, which is what pushes the head as far down the screen as the
-     * zoom above allows, and up to 42.73 (= 47 / 1.1), well past the
-     * figure's own measured extent (row 33) and into the surrounding
-     * background fill, since at this gentle a zoom there's room to spare.
+     * Vertical: 4.55% is the most this can shift without opening a gap --
+     * it already puts row 0 (the drawing's own top edge) at the very top of
+     * the hero, and there is no row above 0 to reveal in exchange for
+     * pushing further. 9.55% goes past that deliberately, by request, at a
+     * fixed zoom: the extra 5 points moves the art's own top edge 5.5% of
+     * the viewport below the hero's top edge, which necessarily uncovers
+     * that much of the hero's own background colour above it, since nothing
+     * else is there to show instead.
+     *
+     * That background shows through more than just a strip at the very top,
+     * though -- it is what the TERMINAL now sits on for part of its own
+     * height too. .tty-hero has `background: none`; it was built to be
+     * "laid into" the art rather than painted over it, letting the art
+     * (dimmed by header-art.js) show through its own interior. Past this
+     * point the terminal is starting to float over its own plain background
+     * instead for the portion where the art no longer reaches, not over
+     * art -- a real, visible change to how the terminal itself reads, and
+     * the reason this wasn't pushed further without showing it first.
      *
      * Both expressed as a percentage of the art's own rendered size, which is
      * what percentages in `transform` resolve against -- so these numbers
      * hold regardless of viewport size or the zoom factor above.
      */
-    transform: translate(6.82%, 4.55%);
+    transform: translate(6.82%, 9.55%);
   }
 }
 
