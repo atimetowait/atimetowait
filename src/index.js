@@ -79,7 +79,28 @@ function adjustMediaPadding() {
 
 adjustMediaPadding();
 window.addEventListener("load", adjustMediaPadding);
-window.addEventListener("resize", adjustMediaPadding);
+
+/**
+ * Re-measuring on resize is right, but binding it straight to the event is not
+ * affordable on a phone: scrolling shows and hides the URL bar, which fires
+ * `resize` repeatedly *during* the scroll. Each one made adjustMediaPadding
+ * read every image's rect and then write a style back, i.e. a forced layout per
+ * image per event, on the one thread that is already trying to scroll.
+ *
+ * Width is also the only dimension the function uses -- it derives height from
+ * `rect.width / ratio`. A URL bar appearing changes only the height, so the
+ * common mobile case needs no work at all and is dropped outright.
+ */
+let lastViewportWidth = window.innerWidth;
+let mediaPaddingTimer = null;
+
+window.addEventListener("resize", () => {
+  if (window.innerWidth === lastViewportWidth) return;
+  lastViewportWidth = window.innerWidth;
+
+  clearTimeout(mediaPaddingTimer);
+  mediaPaddingTimer = setTimeout(adjustMediaPadding, 150);
+});
 
 function openExternalLinksInNewTab() {
   for (const a of document.querySelectorAll("a[href]")) {
@@ -159,7 +180,7 @@ function initGlitch() {
     const original = span.textContent;
     let frame = null;
 
-    span.addEventListener("mouseenter", () => {
+    const scramble = () => {
       if (prefersReducedMotion.matches || frame !== null) return;
 
       const started = performance.now();
@@ -189,7 +210,17 @@ function initGlitch() {
       };
 
       frame = requestAnimationFrame(tick);
-    });
+    };
+
+    span.addEventListener("mouseenter", scramble);
+    // mouseenter alone meant the effect simply did not exist on a phone -- there
+    // is no hover to enter with. pointerdown is the touch equivalent of the same
+    // gesture: reach for the word, the word misbehaves. Binding both is safe
+    // because scramble() is idempotent while running (the `frame !== null`
+    // guard), so a mouse press mid-animation is swallowed and one after it has
+    // settled simply replays it, which is no worse than hovering twice. Not
+    // `click`, so it fires on contact rather than after the tap resolves.
+    span.addEventListener("pointerdown", scramble);
   }
 }
 
@@ -328,3 +359,70 @@ function initArchive() {
 }
 
 initArchive();
+
+/**
+ * THE BACKDROP, AT FULL RESOLUTION
+ *
+ * Each piece of art ships twice (scripts/build-header-art.py --downsample): a
+ * half-scale grid, which is what the page has inlined, and a full-resolution
+ * sibling named on the wrapper as data-art-hires.
+ *
+ * The coarse one is inlined deliberately. At 440 columns across a phone a glyph
+ * renders near 2.4px and the drawing stops resolving as characters at all, so
+ * the detail is unbuyable there at any price -- while the 6-14k extra DOM nodes
+ * are very much payable. Half scale doubles the rendered glyph and costs 61-74%
+ * fewer nodes, including the animated subset, which is the paint cost.
+ *
+ * So this runs only where the detail can actually be seen, and the test lives in
+ * the stylesheet (--art-detail, see IS THE DETAIL WORTH FETCHING? in
+ * src/index.css) rather than as a matchMedia string duplicated here and in
+ * src/header-art.js.
+ *
+ * On a phone this function reaches `return` without touching anything, which
+ * keeps the backdrop pages' standing promise intact: no JavaScript runs on them,
+ * exactly where that promise is worth the most. The hero's own upgrade is
+ * separate and lives in src/header-art.js -- it has to be sequenced before the
+ * cell grid is built, where this one is fire-and-forget.
+ */
+function initBackdropDetail() {
+  const wrap = document.querySelector(".art-backdrop[data-art-hires]");
+  if (!wrap) return;
+
+  // display:none covers `art off` and the prefers-contrast / reduced-transparency
+  // floors. Fetching detail for a layer that will never paint is the one case
+  // worse than not fetching it at all.
+  const style = getComputedStyle(wrap);
+  if (style.display === "none") return;
+  if (style.getPropertyValue("--art-detail").trim() !== "1") return;
+
+  // Save-Data is a reader explicitly asking for less. The art is decorative and
+  // the coarse version is already on screen, so this is exactly the sort of
+  // request that should be skipped rather than merely deferred.
+  if (navigator.connection && navigator.connection.saveData) return;
+
+  const pre = wrap.querySelector(".header-art");
+  if (!pre) return;
+
+  fetch(wrap.dataset.artHires)
+    .then((response) => (response.ok ? response.text() : Promise.reject()))
+    .then((markup) => {
+      // Parsed in a detached document, so the thousands of spans are built once
+      // and swapped in as a single subtree rather than being style-resolved
+      // mid-construction.
+      const next = new DOMParser()
+        .parseFromString(markup, "text/html")
+        .querySelector(".header-art");
+      if (!next) return;
+
+      pre.replaceWith(next);
+      // The hi-res file carries no data-art-hires of its own, but clear the
+      // pointer anyway: nothing should be able to run this twice.
+      delete wrap.dataset.artHires;
+    })
+    .catch(() => {
+      // The half-scale art is already painted and correct. A failed upgrade is
+      // not a failure.
+    });
+}
+
+initBackdropDetail();

@@ -38,17 +38,49 @@ present behind the text column itself, so it doesn't fight readability. It
 picks up the mood colour and theme exactly like the homepage art does, with
 no extra work on your end.
 
+On a narrow screen there are no margins to be bold in, so the same fade turns
+ninety degrees: the art is itself along the top and bottom edges and clears
+through the middle band where the text is. Phones used to get no backdrop at
+all.
+
+## Two resolutions, automatically
+
+Every piece builds twice, and you don't do anything to make that happen:
+
+    demo/art/<name>.generated.html      full resolution
+    demo/art/<name>.m.generated.html    half, for phones
+
+The `.m.` one is what gets inlined into the page. A viewport wide enough to
+resolve the detail then fetches the full-resolution file and swaps it in;
+a phone never asks for it.
+
+This is a legibility decision before it's a performance one. A backdrop at 440
+columns across a 390px screen renders each glyph at about 2.4px, which is below
+the point where characters read as characters at all — so the phone was carrying
+6,000–14,000 DOM nodes to draw a texture. Half scale doubles the rendered glyph
+and costs 61–74% fewer nodes, including the animated subset, which is the part
+that costs paint.
+
+Nothing about this changes how you author a piece. Draw at whatever size suits
+the drawing; the build derives the small one by averaging the ink over each 2×2
+block and picking the character from *your own* alphabet whose ink is closest,
+so a piece made of dots and commas stays made of dots and commas.
+
 It is *not* animated the way the homepage is. The homepage gives every
 character its own `<span>` so `src/header-art.js` can melt cells under the
-pointer; a backdrop instead merges each run of same-tone characters into one
-span (identical on screen, ~87% fewer DOM nodes on the mirrored pieces) and
-runs no JavaScript at all. Its movement — a slow drift, a scanline sweep, and
-a twinkle/blink on a sparse subset of cells tagged during the build — is pure
-CSS on the compositor. See BACKDROP MOTION in `src/index.css`.
+pointer or a finger; a backdrop instead merges each run of same-tone characters
+into one span (identical on screen, ~87% fewer DOM nodes on the mirrored pieces)
+and runs no JavaScript at all. Its movement — a twinkle and a red blink on a
+sparse subset of cells tagged during the build — is pure CSS on the compositor.
+See BACKDROP MOTION in `src/index.css`.
 
 That split exists because a backdrop renders at roughly 5–9px per glyph, a
 third of the homepage's size, behind a mask at ~34% opacity: per-character
 detail there costs a great deal and cannot be seen.
+
+(The one piece of JavaScript these pages run is the resolution swap described
+above, and it only runs on viewports wide enough to want it. On a phone the
+promise still holds exactly: no script touches the page.)
 
 ## Building it
 

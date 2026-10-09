@@ -15,6 +15,15 @@
 things" />
   <meta name="twitter:card" content="summary" />
 
+  <!-- The one face the first screen is guaranteed to need (:root's 500 upright).
+       Preloaded rather than left for the stylesheet to discover, so it is in
+       flight alongside index.css instead of waiting on it -- which is the whole
+       point of having stopped @import-ing the typeface from a CDN. The other
+       four faces are left to be fetched on demand: they only matter once
+       something bold or italic is actually on the page.
+       See THE TYPEFACE in src/index.css. -->
+  <link rel="preload" href="/src/fonts/jetbrains-mono-500.woff2" as="font" type="font/woff2" crossorigin="anonymous" />
+
   <!-- Apply a saved theme (and art on/off) before first paint, so choosing light
        on a dark OS doesn't flash black first, and so `art off` doesn't flash the
        art for one frame before JS hides it. Mirrors the `theme` and `art`

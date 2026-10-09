@@ -45,6 +45,11 @@
   input.autocomplete = "off";
   input.autocapitalize = "off";
   input.spellcheck = false;
+  // A phone keyboard will otherwise offer to autocorrect `whatami` and `ls` into
+  // English, and label its action key "return" rather than something that reads
+  // like running the line.
+  input.setAttribute("autocorrect", "off");
+  input.setAttribute("enterkeyhint", "go");
   input.setAttribute("aria-label", "Terminal input. Type help for commands.");
 
   function print(text, className) {
@@ -53,12 +58,43 @@
     return line;
   }
 
-  function printLink(text, href) {
-    var line = el("div", "tty-line");
-    var a = el("a", null, text);
-    a.href = href;
-    line.appendChild(a);
+  /**
+   * A line assembled from pieces, any of which may be a link.
+   *
+   * `ls` and `find` print slugs you are then expected to retype into `cd` or
+   * `cat`. That is a fair trade with a keyboard and tab-completion under your
+   * hands; on a phone, where neither exists, it is the whole reason the terminal
+   * was unusable there -- the thing you want is on screen and there is no way to
+   * act on it.
+   *
+   * Segments are strings, or {text, href} for the parts that should be
+   * reachable. Padding deliberately stays in the plain-string segments so the
+   * monospace columns still line up and the underline covers the slug rather
+   * than a run of trailing spaces.
+   */
+  function printCells(segments, className) {
+    var line = el("div", "tty-line" + (className ? " " + className : ""));
+    for (var i = 0; i < segments.length; i += 1) {
+      var seg = segments[i];
+      if (typeof seg === "string") {
+        line.appendChild(document.createTextNode(seg));
+      } else {
+        var a = el("a", "tty-link", seg.text);
+        a.href = seg.href;
+        line.appendChild(a);
+      }
+    }
     out.appendChild(line);
+    return line;
+  }
+
+  function printLink(text, href) {
+    return printCells([{ text: text, href: href }]);
+  }
+
+  /** Spaces to carry a column to `width`, never fewer than one. */
+  function gap(text, width) {
+    return " ".repeat(Math.max(1, width - String(text).length));
   }
 
   function printBlank() {
@@ -190,12 +226,22 @@
 
     print("sections/");
     manifest.sections.forEach(function (s) {
-      print("  " + pad(s.name, 14) + s.description, "tty-dim");
+      printCells(
+        ["  ", { text: s.name, href: s.href }, gap(s.name, 14) + s.description],
+        "tty-dim"
+      );
     });
     printBlank();
     print("musings/");
     manifest.entries.forEach(function (e) {
-      print("  " + pad(e.date, 12) + pad(e.slug, 22) + e.summary, "tty-dim");
+      printCells(
+        [
+          "  " + pad(e.date, 12),
+          { text: e.slug, href: e.href },
+          gap(e.slug, 22) + e.summary
+        ],
+        "tty-dim"
+      );
     });
   };
 
@@ -229,7 +275,9 @@
     var entry = manifest.entries.find(function (e) { return e.slug === slug; });
     if (!entry) return print("no entry called " + slug, "tty-dim");
 
-    print(entry.title, "tty-strong");
+    // The title is the obvious thing to reach for once you have decided you want
+    // the whole entry, so it is the link as well as the footer's "read the rest".
+    printCells([{ text: entry.title, href: entry.href }], "tty-strong");
     print(entry.date + "  ·  " + (entry.tags.join(", ") || "untagged") + "  ·  " + entry.mood, "tty-dim");
     printBlank();
 
@@ -286,7 +334,14 @@
     if (!hits.length) return print("nothing for “" + term + "”.", "tty-dim");
     print(hits.length + (hits.length === 1 ? " match" : " matches") + ":");
     hits.forEach(function (e) {
-      print("  " + pad(e.date, 12) + pad(e.slug, 22) + e.summary, "tty-dim");
+      printCells(
+        [
+          "  " + pad(e.date, 12),
+          { text: e.slug, href: e.href },
+          gap(e.slug, 22) + e.summary
+        ],
+        "tty-dim"
+      );
     });
   };
 
@@ -504,10 +559,42 @@
     );
     shell.appendChild(promptRow);
 
+    /**
+     * Something to tap.
+     *
+     * The terminal's two ways in -- Tab to complete and ArrowUp for history --
+     * are both keys, and autofocus is deliberately withheld on touch (see
+     * boot()), so a phone reader arrived at a prompt with no completion, no
+     * history and no hint that any particular word would work. These are the
+     * four commands the boot message already points at, as buttons.
+     *
+     * They go through run() rather than carrying their own behaviour, so there
+     * is one definition of what `home` does and the echoed line looks exactly as
+     * it would had you typed it. Hidden on fine pointers by CSS rather than
+     * never built, so that a laptop with a touchscreen gets them when it is
+     * being touched.
+     */
+    var chips = el("div", "tty-chips");
+    chips.setAttribute("role", "group");
+    chips.setAttribute("aria-label", "Common commands");
+
+    ["home", "help", "ls", "whatami"].forEach(function (name) {
+      var chip = el("button", "tty-chip", name);
+      chip.type = "button";
+      chip.addEventListener("click", function () {
+        run(name);
+      });
+      chips.appendChild(chip);
+    });
+    shell.appendChild(chips);
+
     // Clicking anywhere in the terminal focuses the input, the way a real one
-    // behaves -- but only within the terminal itself.
+    // behaves -- but only within the terminal itself. Buttons are excluded
+    // alongside links: tapping a chip should run it, not also throw up the
+    // software keyboard over the output it just printed.
     shell.addEventListener("click", function (event) {
-      if (event.target.tagName !== "A") input.focus();
+      var tag = event.target.tagName;
+      if (tag !== "A" && tag !== "BUTTON") input.focus();
     });
 
     mount.replaceWith(shell);

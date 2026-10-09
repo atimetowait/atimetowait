@@ -2,10 +2,74 @@
  * By Oskar Wickström
  * Licensed under the MIT License (https://github.com/owickstrom/the-monospace-web/blob/main/LICENSE.md)
  **/
-@import url('https://fonts.cdnfonts.com/css/jetbrains-mono-2');
+
+/**
+ * THE TYPEFACE
+ *
+ * Served from this origin, subset by scripts/build-fonts.py (~18kB a face, from
+ * ~275kB), and declared here rather than pulled in with
+ * `@import url(fonts.cdnfonts.com/...)` as it used to be.
+ *
+ * An @import at the top of the main sheet is the slowest way to load a font:
+ * the browser cannot even discover the font files until it has fetched and
+ * parsed HTML, then this sheet, then the CDN's sheet -- four serial round
+ * trips before a single glyph can paint, on whatever latency a phone happens
+ * to have. @font-face here collapses that to one, and
+ * demo/template.html preloads the 500 upright so it starts in parallel with
+ * this sheet instead of after it.
+ *
+ * Which matters more on this site than most, because the typeface's metrics are
+ * written into the layout: everything is measured in `ch`, and .header-art
+ * cover-fits the artwork with `calc(100vw / (cols * 0.6))` -- 0.6em being
+ * JetBrains Mono's own advance width. A face arriving late doesn't reflow some
+ * prose, it re-lays-out the picture.
+ *
+ * `swap` over `block`: the generic monospace fallbacks all sit within ~0.3% of
+ * JetBrains Mono's 0.6em advance (DejaVu Sans Mono 0.602, Liberation Mono
+ * 0.600, Courier New 0.600), so the grid barely moves if a swap does happen,
+ * and showing nothing at all would be the worse trade on a slow connection.
+ **/
+@font-face {
+  font-family: "JetBrains Mono";
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("/src/fonts/jetbrains-mono-500.woff2") format("woff2");
+}
+@font-face {
+  font-family: "JetBrains Mono";
+  font-style: italic;
+  font-weight: 500;
+  font-display: swap;
+  src: url("/src/fonts/jetbrains-mono-500-italic.woff2") format("woff2");
+}
+@font-face {
+  font-family: "JetBrains Mono";
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("/src/fonts/jetbrains-mono-600.woff2") format("woff2");
+}
+@font-face {
+  font-family: "JetBrains Mono";
+  font-style: normal;
+  font-weight: 800;
+  font-display: swap;
+  src: url("/src/fonts/jetbrains-mono-800.woff2") format("woff2");
+}
+@font-face {
+  font-family: "JetBrains Mono";
+  font-style: italic;
+  font-weight: 800;
+  font-display: swap;
+  src: url("/src/fonts/jetbrains-mono-800-italic.woff2") format("woff2");
+}
 
 :root {
-  --font-family: "JetBrains Mono", monospace;
+  /* The fallbacks are named before the generic so a phone lands on a face with
+     a 0.6em advance -- the one the art's cover-fit assumes -- rather than
+     whatever `monospace` resolves to locally. */
+  --font-family: "JetBrains Mono", "DejaVu Sans Mono", "Liberation Mono", "Menlo", monospace;
   --line-height: 1.20rem;
   --border-thickness: 2px;
   --text-color: #000;
@@ -152,13 +216,12 @@ body {
   max-width: 80ch;
 }
 
-@media (max-width: 768px) {
-  br {
-    display: inline;
-    margin: 0;
-    padding: 0;
-  }
-}
+/* A `@media (max-width: 768px) { br { display: inline } }` block sat here, meant
+   to collapse the double-<br> paragraph spacing on phones. It never did
+   anything: bare `br` is specificity 0,0,1 and loses to both `br + br` (0,0,2,
+   above) and `.journal-entry br:has(+ br)` (0,1,2, further down), so the rules
+   it was trying to undo won at every width. Removed rather than fixed -- the
+   <br> spacing is wanted on mobile too. */
 
 h1, h2, h3, h4, h5, h6 {
   font-weight: var(--font-weight-bold);
@@ -343,11 +406,21 @@ th {
  *
  * Scoped to .home-terminal, the class terminal.js adds once it has taken over
  * and hidden the prose: with JS off that prose is still the page's content and
- * must stay scrollable. Landscape only, because in portrait the art, terminal
- * and guide stack taller than the viewport and clipping them would cut the page
- * off rather than tidy it.
+ * must stay scrollable.
+ *
+ * This used to be landscape-only, because in portrait the art, terminal and
+ * guide stacked taller than the viewport. They no longer stack: in portrait the
+ * terminal is laid INTO the art the same way it is in landscape (see THE
+ * HOMEPAGE TERMINAL below), so one screen is now the rule at every aspect and
+ * the phone gets the prompt on arrival instead of below the fold.
+ *
+ * The height floor is the part that is not optional. `min-aspect-ratio: 1/1`
+ * describes a shape, not a size, so a landscape phone at 844x390 satisfied it
+ * and took this branch -- clipping a 16-line terminal to a 390px viewport with
+ * `overflow: hidden` and no way to scroll to the rest. Anything shorter than
+ * 600px keeps its scrollbar.
  */
-@media (min-aspect-ratio: 1/1) {
+@media (min-height: 600px) {
   html.home-terminal {
     height: 100dvh;
     overflow: hidden;
@@ -451,6 +524,45 @@ th {
 }
 
 /**
+ * IS THE DETAIL WORTH FETCHING?
+ *
+ * Every piece ships at two resolutions (scripts/build-header-art.py --downsample).
+ * The half-scale grid is the one inlined in the page, because the client that
+ * cannot afford the detail is also the one that cannot afford to wait for it; a
+ * wide viewport then swaps in the full-resolution file, named on the wrapper as
+ * data-art-hires.
+ *
+ * The threshold lives here, in the stylesheet, rather than as a matchMedia string
+ * repeated in src/header-art.js and src/index.js. Two copies of a breakpoint is two
+ * things to keep in step, and this one is a judgement about legibility -- which is
+ * a stylesheet's business. The scripts just read the resolved value.
+ *
+ * 864px is this sheet's "the art has margins to live in" width: body's measure is
+ * 80ch, and at the typeface's 0.6em advance on a 16px root that is 768px, leaving
+ * a usable gutter from about 864 up. It is the same threshold the backdrop's
+ * reading-column mask turns at (see PER-PAGE ART BACKDROP).
+ *
+ * Written in px rather than as `90ch`, which is what this was. In a media query
+ * `ch` resolves against the browser's *default* font, not the page's -- nothing
+ * has been loaded or cascaded yet -- so `90ch` meant ~918px under one default
+ * font and ~810 under another, and on this site in particular it never meant
+ * 90 of the columns everything else is measured in. The ambiguity cost a real
+ * bug: an 844px landscape phone landed on whichever side the reader's default
+ * font happened to put it.
+ */
+.header-art-wrap,
+.art-backdrop {
+  --art-detail: 0;
+}
+
+@media (min-width: 864px) {
+  .header-art-wrap,
+  .art-backdrop {
+    --art-detail: 1;
+  }
+}
+
+/**
  * Room for secrets.
  *
  * Individual cells can be opted back in later -- give a span this class (from
@@ -467,25 +579,93 @@ th {
 }
 
 /**
- * Portrait: a 2.34:1 image cannot fill a taller-than-wide screen at any crop
- * worth having. Let the hero collapse to the art's own height, show the whole
- * width, and dissolve the bottom edge so the terminal below reads as a
- * continuation rather than a second slab.
+ * Portrait: the art is the ground, not a band above the content.
+ *
+ * It used to be the other way round -- the hero collapsed to the art's own
+ * height, showed the full width, and dissolved its bottom edge so the terminal
+ * could sit underneath as a continuation. That reads nicely but it puts the one
+ * interactive thing on the page below the fold on a phone, which is the whole
+ * problem being fixed here. So portrait now does what landscape does: the art
+ * fills the hero and the terminal is laid into it.
+ *
+ * A 2.34:1 drawing still cannot fill a taller-than-wide screen at a crop worth
+ * having, which is what the old collapse was conceding. The answer is not to
+ * stop cropping, it is to stop needing the whole composition: --art-cap already
+ * limits the overgrowth to 1.6x the width, and the figure sits in the middle
+ * fifth of the drawing, so a centred cover crop keeps the subject and loses the
+ * flat fill at the edges.
  */
 @media (max-aspect-ratio: 1/1) {
-  .home-hero {
-    height: auto;
-  }
-  .header-art-wrap {
-    position: static;
-    display: flex;
-  }
+  /**
+   * Let it grow into the screen.
+   *
+   * --art-cap limits how far the art may outgrow the viewport's width, and the
+   * base 1.6 was chosen when portrait meant "a band in the flow": it is exactly
+   * the value that keeps a 2.34:1 drawing readable as a picture standing on its
+   * own. Behind a terminal it is the wrong number -- it left the art as a 272px
+   * strip floating in the middle of an 844px screen, below the terminal rather
+   * than under it, which is the opposite of laying one into the other.
+   *
+   * A true cover fit is not the answer either: filling the height of a 0.46:1
+   * screen with a 2.34:1 drawing means showing a fifth of its width. 3.6 fills
+   * about three quarters of the height and crops to the middle ~28%, which on
+   * this piece still contains the whole figure -- it sits across columns 79-113
+   * of 220, i.e. dead centre, which is why a centred crop can afford to be this
+   * tight.
+   */
   .header-art {
-    /* No font-size override: the base rule already clamps to --art-cap here,
-       which crops ~15% a side and buys the art half again as much height. At a
-       true fit the band is only ~166px on a phone and reads as a thin strip. */
-    -webkit-mask-image: linear-gradient(to bottom, #000 68%, transparent 100%);
-    mask-image: linear-gradient(to bottom, #000 68%, transparent 100%);
+    --art-cap: calc(var(--art-fit) * 3.6);
+  }
+
+  /* The top and bottom edges fall away so the art reads as something the page
+     is standing in rather than a photograph with a border -- and so the site
+     guide at the bottom and the terminal at the top each have quieter ground
+     under them than the dense middle of the drawing.
+
+     Portrait only, with the crop above: landscape is already showing the piece
+     at close to its own proportions and has no excess height to give away. */
+  .home-hero .header-art-wrap {
+    -webkit-mask-image: linear-gradient(
+      to bottom, transparent 0, #000 7%, #000 70%, transparent 97%);
+    mask-image: linear-gradient(
+      to bottom, transparent 0, #000 7%, #000 70%, transparent 97%);
+  }
+}
+
+/**
+ * Dimmed wherever the screen is small enough that the terminal covers a real
+ * share of the art rather than sitting in a margin of it.
+ *
+ * Keyed to width, not aspect -- unlike the crop and the mask above, which are
+ * genuinely about portrait. A landscape phone is 844px wide and still has the
+ * terminal across nearly half of it, so tying this to portrait too left that
+ * case reading chip labels against the drawing at full strength. 864px is the
+ * same width the backdrops use to decide they are no longer margin art.
+ *
+ * Higher than the per-page backdrops' 0.34 because everything sitting on top of
+ * this one -- the terminal, its chips, the site guide -- carries its own
+ * per-glyph halo of page colour, and header-art.js separately dims the cells
+ * behind the terminal box. The backdrops have none of that and must protect
+ * ordinary prose by opacity alone.
+ */
+@media (max-width: 864px) {
+  .home-hero .header-art {
+    opacity: 0.45;
+  }
+}
+
+/* Dark has more contrast headroom to spend than light does, exactly as the
+   backdrops' own opacity pair does further down. Not inside the media query
+   above as its only definition -- the sheet's rule is that a value never lives
+   only in a conditional. */
+@media (max-width: 864px) and (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .home-hero .header-art {
+    opacity: 0.52;
+  }
+}
+@media (max-width: 864px) {
+  :root[data-theme="dark"] .home-hero .header-art {
+    opacity: 0.52;
   }
 }
 
@@ -586,12 +766,36 @@ th {
   color: var(--accent);
 }
 
-/* Portrait: back into the flow, under the dissolved edge of the art. */
-@media (max-aspect-ratio: 1/1) {
-  .home-hero #site-guide {
-    position: static;
-    padding: 0 1ch;
-    margin-top: var(--line-height);
+/**
+ * Portrait keeps the guide exactly where landscape has it: low and to the left,
+ * inside the art. It used to drop back into the flow below the hero, which on a
+ * phone meant scrolling to find the way out of the homepage.
+ *
+ * Anchoring by `bottom` rather than `top` is what makes this safe as a
+ * <details>: opening it grows the list upward into the art, so the corner the
+ * reader is pointing at does not move under their finger.
+ *
+ * The one thing portrait does need is a tap target. The links are 19.2px lines
+ * a third of a finger apart, so the rows get padded out here -- and the hit
+ * area is put on the <a>, not the <li>, so the padding is actually tappable
+ * rather than just spacing.
+ */
+@media (hover: none) {
+  .home-hero #site-guide a,
+  .toc-dropdown .site-guide a {
+    display: inline-block;
+    padding: calc(var(--line-height) * 0.5) 0;
+  }
+
+  .home-hero #site-guide li + li,
+  .toc-dropdown .site-guide li + li {
+    margin-top: 0;
+  }
+
+  /* The summary is the control that opens the whole thing, so it needs the
+     same treatment -- it is the smallest target on the homepage otherwise. */
+  .toc-dropdown summary {
+    padding: calc(var(--line-height) * 0.5) 0;
   }
 }
 
@@ -1392,12 +1596,44 @@ label input {
   }
 }
 
-/* Narrow viewports have no margin for the art to live in -- the mask's clear
-   band would swallow the whole screen anyway, so hide the layer outright
-   rather than pay for a backdrop nobody can see. */
-@media (max-width: 90ch) {
+/**
+ * Narrow viewports: the same idea turned ninety degrees.
+ *
+ * This used to be `display: none` -- a narrow screen has no side margins for
+ * the art to live in, so the clear band above would have swallowed the whole
+ * thing and there seemed to be no backdrop worth paying for. The cost argument
+ * was the weaker half of that: phones were downloading and parsing every one of
+ * those 6-14k spans and then throwing the layer away unpainted.
+ *
+ * What a phone does have is vertical margin -- the space above the first line
+ * and below the last, and the run either side of a short entry. So the gradient
+ * runs down the page instead of across it: the art is itself at the top and
+ * bottom edges, and feathers clear through the middle band where the text
+ * column actually is. Same mechanism, same cost, different axis.
+ *
+ * `--clear`/`--feather` are reused as-is rather than renamed: they mean "half
+ * the cleared band" and "how far it takes to get there" in whichever direction
+ * the gradient is pointing.
+ */
+@media (max-width: 864px) {
   .art-backdrop {
-    display: none;
+    /* In ch, like the horizontal case, but read as lines here: a comfortable
+       reading column is ~30 lines on a phone, so clear 2x14 of them and let
+       the feather do the rest. */
+    --clear: 14em;
+    --feather: 6em;
+  }
+
+  .art-backdrop::before {
+    background-image: linear-gradient(
+      to bottom,
+      transparent 0,
+      transparent calc(50% - var(--clear) - var(--feather)),
+      color-mix(in srgb, var(--background-color) 78%, transparent) calc(50% - var(--clear)),
+      color-mix(in srgb, var(--background-color) 78%, transparent) calc(50% + var(--clear)),
+      transparent calc(50% + var(--clear) + var(--feather)),
+      transparent 100%
+    );
   }
 }
 
@@ -1415,7 +1651,11 @@ label input {
 }
 
 .tty-out {
-  max-height: calc(var(--line-height) * 16);
+  /* The smaller of a line count and a share of the screen: the count is the
+     considered choice and governs on a desktop, the viewport governs wherever
+     that choice would not fit -- a landscape phone being the case that used to
+     push the prompt row off the bottom of a page that cannot scroll. */
+  max-height: min(calc(var(--line-height) * 16), 42dvh);
   overflow-y: auto;
   overflow-x: auto;
   margin-bottom: calc(var(--line-height) * 0.5);
@@ -1431,6 +1671,98 @@ label input {
 .tty-dim    { color: var(--text-color-alt); }
 .tty-strong { color: var(--accent); font-weight: var(--font-weight-medium); }
 .tty-echo   { color: var(--text-color-alt); }
+
+/* Slugs printed by `ls` and `find` are links now rather than text to retype.
+   `inherit`, so a row stays the dim grey the listing is set in and the
+   underline is the only thing marking it -- a column of accent-coloured names
+   would read as a menu rather than as output. */
+.tty-link {
+  color: inherit;
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 2px;
+}
+
+.tty-link:hover,
+.tty-link:focus-visible {
+  color: var(--accent);
+}
+
+/**
+ * THINGS TO TAP
+ *
+ * A terminal line is 19.2px tall and these sit in a scrolling column of them,
+ * which is nowhere near a finger. Padding the anchor (not the line) grows the
+ * hit area without moving the text off the monospace grid, since the extra
+ * height is distributed around a box that is still inline.
+ *
+ * Only on coarse pointers: on a desktop this would space a dense listing out
+ * for no reason, and the listing's density is the point of it.
+ */
+@media (hover: none) {
+  .tty-link {
+    display: inline-block;
+    /* 19.2px of line plus 2x9.6 lands at ~38px. Comfortably past WCAG 2.5.8's
+       24px floor without stretching a 13-line `ls` into something you have to
+       scroll twice; the 44px of 2.5.5 would. */
+    padding: calc(var(--line-height) * 0.5) 0;
+  }
+}
+
+/**
+ * The command chips.
+ *
+ * Built on every device (see terminal.js) and revealed only where there is no
+ * hover, so a touchscreen laptop gets them when it is being touched rather than
+ * being judged once at load. Dressed as .archive-tag is -- the site's existing
+ * small bordered control -- rather than as a new shape.
+ */
+.tty-chips {
+  display: none;
+  flex-wrap: wrap;
+  gap: 1ch;
+  margin-top: calc(var(--line-height) * 0.5);
+}
+
+@media (hover: none) {
+  .tty-chips {
+    display: flex;
+  }
+}
+
+.tty-chip {
+  height: calc(var(--line-height) * 2);
+  /* 1ch, not more: the four of them plus their gaps come to ~305px, and the
+     terminal's inner width on a 390px phone is ~320px. Any looser and
+     `whatami` wraps to a second row, which costs another 38px of a screen
+     these exist to keep uncluttered. */
+  padding: 0 1ch;
+  text-transform: none;
+  font-size: 0.875rem;
+  border: 1px solid var(--accent);
+  color: var(--text-color);
+  /* Same reasoning as .tty-hero's own outline: over the art a flat border can
+     vanish where it crosses a dense patch, so it carries a pool of page colour
+     with it. Wider and doubled compared to the terminal's own box, because a
+     chip is a small target sitting at the very bottom edge of that box -- often
+     right where header-art.js's dim shadow is already feathering back out into
+     full-strength art. */
+  background: none;
+  box-shadow:
+    0 0 0 2px var(--background-color),
+    0 0 6px 3px var(--background-color),
+    0 0 10px 5px var(--background-color);
+}
+
+.tty-chip::before {
+  /* Reads as something you would have typed, not as a toolbar. */
+  content: "> ";
+  color: var(--accent);
+}
+
+.tty-chip:active {
+  background: var(--background-color-alt);
+}
 
 .tty-prompt-row {
   display: flex;
@@ -1837,7 +2169,8 @@ label input {
  */
 .tty-hero .tty-line,
 .tty-hero .tty-prompt,
-.tty-hero .tty-input {
+.tty-hero .tty-input,
+.tty-hero .tty-chip {
   text-shadow:
     0 0 4px var(--background-color),
     0 0 4px var(--background-color),
@@ -1851,11 +2184,9 @@ label input {
 }
 
 /* Boot is only a few lines now, but `help` and `cat` are not: scroll them
-   inside the terminal so it never outgrows the hero. */
-.tty-hero .tty-out {
-  max-height: calc(var(--line-height) * 16);
-  margin-bottom: calc(var(--line-height) * 0.5);
-}
+   inside the terminal so it never outgrows the hero. Both values are the same
+   as the base .tty-out's, which is why they are no longer repeated here --
+   there is only the one terminal left, so the override had nothing to override. */
 
 .tty-hero .tty-prompt-row {
   padding-top: calc(var(--line-height) * 0.5);
@@ -1867,15 +2198,28 @@ label input {
   caret-shape: block;
 }
 
-/* Portrait: the hero is no longer a fixed-height stage, so the terminal
-   returns to normal flow and sits in the art's dissolved lower edge. */
+/**
+ * Portrait: still laid into the art, but across the top rather than tucked into
+ * the right margin.
+ *
+ * The landscape placement exists to dodge the figure, which sits around columns
+ * 79-113 of 220 -- there is no room beside it, so the terminal takes the right
+ * margin. In portrait the crop has thrown those margins away, so there is no
+ * "beside" left: the terminal takes the full width and sits above the subject
+ * instead, which is also the quietest part of the composition (density 15/100
+ * across the top against 82 along the bottom).
+ *
+ * It previously returned to `position: static` and sat below the art entirely.
+ * That is what put the prompt below the fold.
+ */
 @media (max-aspect-ratio: 1/1) {
   .tty-hero {
-    position: static;
-    transform: none;
+    top: 2%;
+    right: 3vw;
+    left: 3vw;
     width: auto;
-    padding: 0 1ch;
-    margin-top: calc(var(--line-height) * -2);
+    transform: none;
+    margin-top: 0;
   }
 }
 
@@ -1883,10 +2227,8 @@ label input {
   .tty-hero {
     font-size: 0.875rem;
   }
-  .tty-hero .tty-out {
-    max-height: calc(var(--line-height) * 14);
-  }
 }
+
 
 /**
  * Accessibility floor. When the reader has asked for more contrast or less
@@ -1901,10 +2243,15 @@ label input {
   }
   .tty-hero .tty-line,
   .tty-hero .tty-prompt,
-  .tty-hero .tty-input {
+  .tty-hero .tty-input,
+  .tty-hero .tty-chip {
     text-shadow: none;
   }
   .tty-hero .tty-caret {
+    box-shadow: none;
+  }
+  .tty-hero .tty-chip {
+    border: var(--border-thickness) solid var(--text-color);
     box-shadow: none;
   }
 }

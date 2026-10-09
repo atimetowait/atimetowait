@@ -130,6 +130,29 @@ def parse_args() -> argparse.Namespace:
         "on the homepage it is written out as --art-flare for header-art.js to read.",
     )
     parser.add_argument(
+        "--downsample",
+        type=int,
+        default=1,
+        metavar="N",
+        help="block-average N x N source cells into one output cell (default 1, off). "
+        "This is the phone variant: at 220 columns across a 390px screen a glyph is "
+        "~1.8px and the drawing stops resolving as characters at all, so the "
+        "per-character grid is paying for detail that physically cannot be seen. "
+        "N=2 cuts 61-74%% of the nodes and reads BETTER at that size, because the "
+        "glyphs land near 3.5px instead of smearing into texture.",
+    )
+    parser.add_argument(
+        "--hires",
+        default="",
+        metavar="URL",
+        help="URL of this piece's full-resolution sibling, written onto the wrapper as "
+        "data-art-hires. The coarse variant is the one inlined into the page -- the "
+        "constrained client should not have to wait on a request -- and a viewport "
+        "wide enough to resolve the detail swaps this in afterwards (src/header-art.js "
+        "for the hero, src/index.js for the backdrops). Omit on the hi-res build "
+        "itself, or there would be nothing to stop it upgrading to itself forever.",
+    )
+    parser.add_argument(
         "--tiers",
         type=int,
         default=TONE_TIERS,
@@ -160,6 +183,44 @@ def load_rows(source: Path) -> list[str]:
 
     width = max(len(row) for row in rows)
     return [row.ljust(width) for row in rows]
+
+
+def downsample(rows: list[str], n: int, weights: dict[str, float]) -> list[str]:
+    """Halve (or quarter, ...) the grid's resolution, keeping the drawing's tone.
+
+    Each output cell averages the measured ink of the n x n source cells it covers,
+    then takes the character from the piece's OWN alphabet whose ink is closest to
+    that average. Drawing from the source's alphabet rather than a fixed ramp is what
+    keeps the result looking like the same artist's hand: a piece built out of dots
+    and commas downsamples into dots and commas, not into #s and @s.
+
+    n is uniform on both axes on purpose. It is tempting to compensate for the 1:2
+    monospace cell -- characters are twice as tall as they are wide -- but each
+    OUTPUT cell renders at that same 1:2 ratio, so scaling both axes equally is
+    exactly what preserves the rendered aspect ratio. 220x47 -> 110x24 is still the
+    homepage portrait's 2.34:1.
+    """
+    if n <= 1:
+        return rows
+
+    alphabet = sorted(set("".join(rows)))
+    height = len(rows)
+    width = len(rows[0])
+    out = []
+
+    for top in range(0, height, n):
+        line = []
+        for left in range(0, width, n):
+            block = [
+                rows[r][c]
+                for r in range(top, min(top + n, height))
+                for c in range(left, min(left + n, width))
+            ]
+            average = sum(weights[char] for char in block) / len(block)
+            line.append(min(alphabet, key=lambda char: abs(weights[char] - average)))
+        out.append("".join(line))
+
+    return out
 
 
 def ink_weights(chars: set[str]) -> dict[str, float]:
@@ -319,9 +380,19 @@ def build(
     flare: float,
     seed: str = "",
     tiers: int = TONE_TIERS,
+    scale: int = 1,
+    hires: str = "",
 ) -> tuple[str, dict]:
+    # Measured on the full-resolution art, before any downsampling: the block
+    # average needs every source character's real ink, and the coarse grid's own
+    # characters are drawn from the same alphabet anyway.
     weights = ink_weights(set("".join(rows)))
-    stats: dict = {}
+    stats: dict = {"source_cells": len(rows) * len(rows[0])}
+
+    if scale > 1:
+        rows = downsample(rows, scale, weights)
+
+    stats["cells"] = len(rows) * len(rows[0])
 
     if wrapper_class == BACKDROP_CLASS:
         # Seeded off the piece's own name so a rebuild is byte-stable (no git churn)
@@ -342,6 +413,10 @@ def build(
 
     cols = len(rows[0])
     rows_n = len(rows)
+    stats["cols"] = cols
+    stats["rows"] = rows_n
+    # The row wrappers are counted too, because the DOM pays for them exactly like
+    # any other node -- this is the number that matters on a phone, not the cells.
     stats["spans"] = sum(chunk.count("<span") for chunk in row_markup)
     # Only the homepage's JS reads this; a backdrop bakes its flare in above.
     flare_style = (
@@ -350,8 +425,10 @@ def build(
         else ""
     )
 
+    hires_attr = f' data-art-hires="{html.escape(hires)}"' if hires else ""
+
     markup = (
-        f'<div class="{html.escape(wrapper_class)}">\n'
+        f'<div class="{html.escape(wrapper_class)}"{hires_attr}>\n'
         f'<p class="visually-hidden">{html.escape(description)}</p>\n'
         f'<pre class="header-art" aria-hidden="true" '
         f'style="--art-cols:{cols}; --art-rows:{rows_n};{flare_style}">{art}</pre>\n'
@@ -362,6 +439,9 @@ def build(
 
 def main() -> None:
     args = parse_args()
+    if args.downsample < 1:
+        sys.exit("--downsample must be 1 or more")
+
     rows = load_rows(args.source)
     args.output.parent.mkdir(parents=True, exist_ok=True)
     markup, stats = build(
@@ -371,17 +451,24 @@ def main() -> None:
         args.flare,
         seed=args.source.name,
         tiers=args.tiers,
+        scale=args.downsample,
+        hires=args.hires,
     )
     args.output.write_text(markup, encoding="utf-8")
 
-    cells = len(rows) * len(rows[0])
-    detail = f"{len(rows)} rows x {len(rows[0])} cols = {cells:,} cells"
+    cells = stats["cells"]
+    detail = f"{stats['rows']} rows x {stats['cols']} cols = {cells:,} cells"
+    if args.downsample > 1:
+        shrink = 100 * (1 - cells / stats["source_cells"])
+        detail += f" (1/{args.downsample} scale, {shrink:.0f}% fewer cells)"
     if stats["mode"] == "runs":
         saved = 100 * (1 - stats["spans"] / cells) if cells else 0
         detail += (
             f" -> {stats['spans']:,} spans ({saved:.0f}% fewer), "
             f"{stats['twinkles']} twinkle + {stats['blinks']} blink"
         )
+    else:
+        detail += f" -> {stats['spans']:,} spans"
     print(f"wrote {args.output} ({detail})")
 
 
