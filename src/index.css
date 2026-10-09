@@ -1531,7 +1531,30 @@ label input {
    fails ceiling documented above still caps this at ~0.45 -- 0.34 leaves a
    bit of margin while reading noticeably brighter in the margins, where
    there's no text to fight at all. */
+/**
+ * True cover fit, uncapped -- the backdrop fills the fixed layer on every
+ * axis, on every screen, with nothing left over.
+ *
+ * The shared base rule's --art-cap (1.6x fit) was written for the homepage
+ * hero, to stop a wide image cover-scaling down to a sliver on a narrow
+ * phone. On a backdrop piece -- squarer, ~1.3-2:1 rather than the hero's
+ * 2.34:1 -- that same cap instead clamps the OTHER direction on any portrait
+ * screen: cover (the value that would fill the height) gets capped back down
+ * to 1.6x fit, so the art renders at only 50-60% of the viewport's height,
+ * centred by the shared flex rule, with nothing at all above and below it --
+ * not even the faint margin-wash the mask produces, just flat page colour.
+ * That is the "negative space:" not the mask clearing a reading column (by
+ * design, see PER-PAGE ART BACKDROP) but the art falling short of the layer
+ * it is meant to fill.
+ *
+ * max(fit, cover) with no cap is the fix: a true cover fit, which can only
+ * ever crop MORE width than the capped formula did, never less, so there is
+ * no orientation where this makes anything worse. Wherever fit was already
+ * winning (landscape, desktop -- every case that wasn't broken) the two
+ * formulas agree exactly, since the cap only ever bound cover.
+ */
 .art-backdrop .header-art {
+  font-size: max(var(--art-fit), var(--art-cover));
   opacity: 0.34;
 }
 
