@@ -635,20 +635,20 @@ th {
      * works out -- so this stays close to a plain cover fit rather than
      * pushing toward either extreme again.
      *
-     * 1.3, not the 1.383 landed on two passes ago (the most zoom that still
-     * keeps the head's full width in frame, with a small margin): stepped
-     * back further on request, to ease the crop pressing in on the head's
-     * sides -- "crammed" against its own edges, rather than too small or
-     * badly placed. The two are the same lever here (font-size scales a
-     * monospace grid's row height and column width together, so there is no
-     * way to loosen one without also moving the other), so this costs a
-     * little more terminal overlap to buy it: the head starts at ~13.8% down
-     * the screen now (was ~14.7%) against the terminal's own ~21.6% edge,
-     * softened the same way by the terminal's own dim-shadow
-     * (header-art.js), for about 2 columns more breathing room on every
-     * phone width checked.
+     * 1.1, down from 1.3 and 1.383 before that -- two further steps out,
+     * easing the crop pressing in on the head's sides each time. The two
+     * axes are the same lever here (font-size scales a monospace grid's row
+     * height and column width together, so there is no way to loosen one
+     * without also moving the other), so each step costs a little more
+     * terminal overlap to buy it: the head starts at ~11.7% down the screen
+     * now (was ~13.8%, originally ~14.7%) against the terminal's own ~21.6%
+     * edge, softened the same way by the terminal's own dim-shadow
+     * (header-art.js), for roughly 5-6 columns more breathing room than 1.3
+     * on every phone width checked -- and close to a true cover fit (1.0,
+     * where this rule started): little room left to ease further without
+     * giving up the zoom's whole purpose.
      */
-    font-size: calc(var(--art-cover) * 1.3);
+    font-size: calc(var(--art-cover) * 1.1);
     /**
      * Re-centred on the head, not on the drawing's own geometry, on both axes.
      *
@@ -659,17 +659,17 @@ th {
      * this was never needed before.
      *
      * Vertical: shifts the visible window from the drawing's own vertical
-     * centre down to [row 0, row 36.15] -- all the way to the drawing's own
+     * centre down to [row 0, row 42.73] -- all the way to the drawing's own
      * top edge, which is what pushes the head as far down the screen as the
-     * zoom above allows, and up to 36.15 (= 47 / 1.3), past the figure's own
-     * measured extent (row 33), so the whole figure stays in frame rather
-     * than being cropped away at the waist or shoulders.
+     * zoom above allows, and up to 42.73 (= 47 / 1.1), well past the
+     * figure's own measured extent (row 33) and into the surrounding
+     * background fill, since at this gentle a zoom there's room to spare.
      *
      * Both expressed as a percentage of the art's own rendered size, which is
      * what percentages in `transform` resolve against -- so these numbers
      * hold regardless of viewport size or the zoom factor above.
      */
-    transform: translate(6.82%, 11.54%);
+    transform: translate(6.82%, 4.55%);
   }
 }
 
