@@ -178,24 +178,13 @@
     var onScreen = true;
     var awake = true;
 
-    // --------------------------------------------------------------- noise field
-
-    // Cheap value noise. Good enough to look organic, and far cheaper than
-    // anything gradient-based when it runs over 10k cells.
-    function noise(x, y, t) {
-      var n = Math.sin(x * 0.13 + t * 0.0007) +
-              Math.sin(y * 0.21 - t * 0.0005) +
-              Math.sin((x + y) * 0.07 + t * 0.0011);
-      return (n / 3 + 1) / 2; // 0..1
-    }
-
     // ------------------------------------------------------------------- the loop
 
     // The pre's own box only moves on resize (fixed backdrops don't shift with
-    // scroll; the homepage's in-flow copy doesn't shift as the terminal grows,
-    // only the terminal's own rect does -- see overlayBoxes). Reading it fresh
-    // every frame was a forced layout read on the hot path for no reason, so
-    // it's cached here and only recomputed when the viewport actually changes.
+    // scroll, and the homepage's in-flow copy doesn't shift as the terminal
+    // grows). Reading it fresh every frame was a forced layout read on the hot
+    // path for no reason, so it's cached here and only recomputed when the
+    // viewport actually changes.
     var cachedMetrics = null;
 
     function computeMetrics() {
@@ -213,13 +202,7 @@
       return cachedMetrics;
     }
 
-    window.addEventListener("resize", function () {
-      computeMetrics();
-      // The shadow is cached in grid coordinates, which the new metrics change
-      // the meaning of, so it has to be thrown away rather than merely re-keyed.
-      dimKey = "";
-      buildDimMap();
-    });
+    window.addEventListener("resize", computeMetrics);
 
     // char -> index, built once. rampShift used to call RAMP.indexOf(char),
     // an O(RAMP.length) scan repeated for every one of up to 65,120 cells every
@@ -232,146 +215,6 @@
       if (i === undefined) return char;
       var next = Math.max(0, Math.min(RAMP.length - 1, i + steps));
       return RAMP[next];
-    }
-
-    /* ------------------------------------------------------- the terminal's shadow
-
-       The terminal is laid into the art rather than placed on top of it, so the
-       art recedes around it -- but never cleanly. The falloff is multiplied by the
-       noise field, which makes the edge ragged and lets the art bleed into the
-       text instead of stopping at a rectangle. Cells are dimmed by lowering their
-       tone tier, reusing the k0..k7 palette rather than inventing another one, and
-       never all the way to nothing: the art should still show through.
-    */
-    var DIM_FEATHER = 7;   // cells of falloff beyond the terminal's edge
-    var DIM_MAX = 6;       // tone tiers to subtract at the centre
-
-    // Everything laid into the art casts a shadow, not just the terminal.
-    var OVERLAY_SELECTOR = ".tty-hero, .home-hero #site-guide";
-
-    /** The overlaid elements' boxes in grid coordinates. */
-    function overlayBoxes(m) {
-      // These are built or re-laid out after this module runs, so re-query each
-      // time rather than caching a stale list.
-      var els = document.querySelectorAll(OVERLAY_SELECTOR);
-      var out = [];
-      for (var i = 0; i < els.length; i += 1) {
-        var b = els[i].getBoundingClientRect();
-        if (!b.width || !b.height) continue;
-        out.push({
-          x0: (b.left - m.left) / m.w,
-          x1: (b.right - m.left) / m.w,
-          y0: (b.top - m.top) / m.h,
-          y1: (b.bottom - m.top) / m.h
-        });
-      }
-      return out;
-    }
-
-    /**
-     * The shadow, precomputed once per layout.
-     *
-     * This was the single most expensive thing on the page, and it was buying
-     * nothing: dimStepsAt() ran per cell per frame, each call doing a sqrt per
-     * overlay box plus a three-sin noise() -- around 20,000 sqrt and 31,000 sin
-     * every frame at the homepage's full resolution -- to recompute a value that
-     * cannot change between frames. The noise is seeded at t=0 on purpose (see
-     * below), the grid does not move, and the boxes only move when the terminal
-     * is re-laid out.
-     *
-     * So it is a lookup table now, rebuilt only when the geometry it depends on
-     * actually changes. A Uint8Array because the result is 0..DIM_MAX.
-     */
-    var dimMap = new Uint8Array(COUNT);
-    var dimKey = "";
-
-    function buildDimMap() {
-      var m = cellMetrics();
-      var boxes = overlayBoxes(m);
-
-      // Cheap identity for "the same shadow as last time". Rounded to whole
-      // cells, which is the resolution the map is computed at anyway, so the
-      // terminal growing by a fraction of a line does not force a rebuild.
-      var key = boxes
-        .map(function (b) {
-          return [b.x0 | 0, b.x1 | 0, b.y0 | 0, b.y1 | 0].join(",");
-        })
-        .join(";");
-      if (key === dimKey) return;
-      dimKey = key;
-
-      // The map is an input to every cell's appearance, and the frame loop only
-      // visits cells their own schedule marks as due -- so a new shadow has to
-      // make everything due, or it would fade in cell by cell over the next few
-      // seconds as unrelated twinkles happened to come round.
-      invalidateSchedule();
-
-      if (!boxes.length) {
-        dimMap.fill(0);
-        return;
-      }
-
-      for (var row = 0; row < ROWS; row += 1) {
-        for (var col = 0; col < COLS; col += 1) {
-          var nearest = Infinity;
-          for (var i = 0; i < boxes.length; i += 1) {
-            var box = boxes[i];
-            var dx = col < box.x0 ? box.x0 - col : (col > box.x1 ? col - box.x1 : 0);
-            var dy = row < box.y0 ? box.y0 - row : (row > box.y1 ? row - box.y1 : 0);
-            var dist = Math.sqrt(dx * dx + dy * dy);
-            if (dist < nearest) nearest = dist;
-          }
-
-          var steps = 0;
-          if (nearest < DIM_FEATHER) {
-            // Modulate then clamp, rather than scaling the whole falloff by
-            // noise: that way the core under the text is reliably dim enough to
-            // read against, and it is the *edge* that goes ragged and lets the
-            // art bleed back in.
-            // Static seed, not a timestamp: an animated edge made the shadow
-            // crawl, which read as another drifting blob. The raggedness should
-            // be a fixed shape -- which is also what makes this cacheable.
-            var f = 1 - nearest / DIM_FEATHER;
-            f = Math.min(1, f * (0.8 + 0.6 * noise(col * 1.7, row * 1.7, 0)));
-            steps = Math.round(f * DIM_MAX);
-          }
-          dimMap[row * COLS + col] = steps;
-        }
-      }
-    }
-
-    /**
-     * Watch the overlays instead of measuring them every frame.
-     *
-     * The old loop called overlayBoxes() once per frame -- a querySelectorAll and
-     * two getBoundingClientRect()s, i.e. a forced layout on the hot path, which
-     * is exactly the mistake already fixed for the <pre>'s own box above. The
-     * terminal does change shape as its output grows, so the measurement is
-     * needed; it is just needed when the shape changes, not sixty times a second
-     * in case it did.
-     */
-    function watchOverlays() {
-      if (!("ResizeObserver" in window)) {
-        // Without an observer, fall back to re-measuring on a slow timer. Still
-        // vastly cheaper than per-frame, and the shadow lagging a command's
-        // output by a moment is not something anyone can see.
-        setInterval(buildDimMap, 400);
-        return;
-      }
-
-      var observer = new ResizeObserver(buildDimMap);
-      var els = document.querySelectorAll(OVERLAY_SELECTOR);
-      for (var i = 0; i < els.length; i += 1) observer.observe(els[i]);
-
-      // terminal.js replaces #tty-mount with .tty-hero after this module runs, so
-      // the selector above can legitimately find nothing on the first pass.
-      if (!els.length) {
-        requestAnimationFrame(function () {
-          var later = document.querySelectorAll(OVERLAY_SELECTOR);
-          for (var j = 0; j < later.length; j += 1) observer.observe(later[j]);
-          buildDimMap();
-        });
-      }
     }
 
     /* ------------------------------------------------------------------ the blink
@@ -455,8 +298,8 @@
 
        The loop used to walk every cell every time it painted. That is the obvious
        way to write it and it is almost all waste: a cell's appearance is a pure
-       function of its twinkle phase, its blink phase and the static dim map, and
-       the two phases are long cycles with brief active windows. Twinkle is shifted
+       function of its twinkle phase and its blink phase, and the two phases are
+       long cycles with brief active windows. Twinkle is shifted
        for TWINKLE_ON/twPeriod of its cycle -- 400ms in 2500-10000, call it 6% --
        and blink only moves during BLINK_ON of a period, on the ~13% of cells that
        blink at all. Under a tenth of the grid can look different from one frame to
@@ -470,12 +313,6 @@
        the same cells at the same moments, just not on the other ones.
     */
     var nextEvent = new Float64Array(COUNT);  // 0 = due now, so the first frame paints all
-
-    /** Mark every cell due, for when something outside the schedule changed. */
-    function invalidateSchedule() {
-      nextEvent.fill(0);
-      kick();
-    }
 
     function scheduleOf(i, now) {
       // Twinkle: the next edge of its on/off window.
@@ -557,10 +394,7 @@
 
       var red = blinkLevel(idx, ctx.now);
       var rClass = red > 0.66 ? " r3" : red > 0.33 ? " r2" : red > 0.08 ? " r1" : "";
-      // A lookup now, not a sqrt and three sins per cell per frame. See buildDimMap.
-      var tier = toneTier[idx] - dimMap[idx];
-      if (tier < 0) tier = 0;
-      var nextClass = "k" + tier + rClass;
+      var nextClass = "k" + toneTier[idx] + rClass;
 
       if (shownChar[idx] !== char) {
         cells[idx].textContent = char;
@@ -704,17 +538,10 @@
      * would be stranded half-erased. This is the floor that cannot happen.
      */
     function paintBase() {
-      // Static paths need the terminal's shadow too -- without it the art would sit
-      // at full strength behind the text under reduced-motion. buildDimMap is a
-      // no-op when the geometry has not moved since the last call, so this is safe
-      // to call on every entry into paintBase.
-      buildDimMap();
       for (var i = 0; i < COUNT; i += 1) {
         // Frozen at a single instant: a still scattering of red, no blinking.
         var red = blinkLevel(i, 0);
-        var tier = toneTier[i] - dimMap[i];
-        if (tier < 0) tier = 0;
-        var cls = "k" + tier + (red > 0.66 ? " r3" : red > 0.33 ? " r2" : red > 0.08 ? " r1" : "");
+        var cls = "k" + toneTier[i] + (red > 0.66 ? " r3" : red > 0.33 ? " r2" : red > 0.08 ? " r1" : "");
         if (shownChar[i] !== base[i]) {
           cells[i].textContent = base[i];
           shownChar[i] = base[i];
@@ -740,25 +567,9 @@
 
     // ------------------------------------------------------------------ listeners
 
-    // Build the shadow once up front and then only when something moves. On the
-    // reduced-motion path below, paintBase() calls this again itself once the
-    // terminal exists.
-    buildDimMap();
-    watchOverlays();
-
     if (reduced.matches) {
-      // Static, but still coloured: paint the noise field once and stop.
+      // Static, but still coloured: paint once and stop.
       paintBase();
-      // terminal.js builds .tty-hero after this file runs, so the first paint has
-      // no box to cast a shadow from. Paint once more when it exists, otherwise
-      // reduced-motion readers get full-strength art behind the terminal text.
-      if (document.readyState === "loading") {
-        document.addEventListener("DOMContentLoaded", function () {
-          setTimeout(paintBase, 0);
-        });
-      } else {
-        setTimeout(paintBase, 0);
-      }
       return;
     }
 
