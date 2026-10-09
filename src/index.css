@@ -625,64 +625,48 @@ th {
    */
   .home-hero .header-art {
     /**
-     * Zoomed past a true cover fit, and panned, so the head sits further
-     * down the screen instead of starting right under the terminal.
+     * A true cover fit -- the whole 47-row drawing, nothing cropped beyond
+     * the width loss cover-fit sizing already costs at this aspect ratio --
+     * is the resting value here, by request: "fully in view" outweighs
+     * pushing the head any further down the screen.
      *
-     * Plain cover fit (font-size: var(--art-cover), nothing more) stretches
-     * the ENTIRE drawing, all 47 rows, across the screen's height with
-     * nothing cropped. That puts the head -- rows 5-21 of the source art,
-     * well up near the top of the piece -- at only ~11% down the screen.
-     * There are only 5 blank rows above the head in the drawing itself, a
-     * fixed property of the art, so pushing it down means showing a smaller
-     * vertical slice -- i.e. zooming in -- not just panning a 1.0x image.
-     * --art-cap can't do this (it only ever clamps font-size DOWN from
-     * max(fit, cover), never past it), so font-size is overridden directly.
+     * It wasn't the first thing tried. Pushing past 1.0 creates room to pan
+     * the head down (there are only 5 blank rows above it in the drawing
+     * itself, so moving it further means showing a smaller vertical slice,
+     * i.e. zooming in, not just panning a 1.0x image) and several values
+     * were tried in that direction -- up to 1.8, chosen as the empirical
+     * ceiling before the crop cuts into the oval's own tonal taper rather
+     * than just its outer edges (confirmed by printing the actual visible
+     * character grid and reading it, not by column-count arithmetic alone).
+     * But each step traded a closer look at the head for a smaller, more
+     * cropped view of it, which answers a different question than "is the
+     * whole figure visible."
      *
-     * How far to push that zoom turned out to have a real ceiling, found
-     * empirically rather than guessed: pushing hard enough to fully clear
-     * the terminal (tried at z=2.35, matched to the terminal's own measured
-     * edge) makes the visible window narrower than the head's OWN width at
-     * most of its rows -- confirmed by printing the actual visible character
-     * grid at that crop and reading it. That doesn't trim the head's outer
-     * edges, it cuts through the soft tonal taper that is what reads as an
-     * oval rather than a block of $. The taper survives, thin but present,
-     * through about z=1.8; by z=2.2 it's gone.
-     *
-     * Even short of that cliff, 1.8 read as too tight a crop -- the point
-     * was to let the figure read as a figure beneath the terminal, not to
-     * frame just its densest core. 1.15 is the resting value: close to a
-     * plain cover fit (1.0), enough zoom to lift the head off the very top
-     * edge and give the composition some depth, but not enough to crop
-     * meaningfully into anything. It leaves real overlap with the terminal
-     * -- getting that fully clear needs either the 1.8-and-tighter crop
-     * (rejected above) or a much smaller terminal footprint than shrinking
-     * boot()/chips/.tty-hero's own padding (done alongside this) can
-     * reasonably get to -- and that overlap is what the terminal's own
-     * dim-shadow (header-art.js) exists to soften, the way it always has.
+     * At 1.0 the head still starts at only ~11% down the screen, behind
+     * most of the terminal -- by design now, not oversight: the brief was
+     * explicitly that the terminal covering that region is fine, since what
+     * it's covering there reads as the drawing's own dead space (the blank
+     * rows, and the head's own soft upper taper) rather than a hard crop
+     * into anything. The terminal's dim-shadow (header-art.js) still softens
+     * that overlap the way it always has.
      */
-    font-size: calc(var(--art-cover) * 1.15);
+    font-size: var(--art-cover);
     /**
-     * Re-centred on the head, not on the drawing's own geometry, on both axes.
+     * Re-centred on the head, not on the drawing's own geometry.
      *
-     * Horizontal: a cover-fit crop is symmetric about the grid's centre
-     * column (110 of 220), but the head sits at columns 82-108, centred on
-     * 95 -- fifteen columns left of that. At the base rule's mild landscape
-     * crop (~12% a side) that offset is lost in the margin, which is why this
-     * was never needed before. At this much tighter crop, a window centred on
-     * 110 lands past the head's own edge rather than on it.
+     * A cover-fit crop is symmetric about the grid's centre column (110 of
+     * 220), but the head sits at columns 82-108, centred on 95 -- fifteen
+     * columns left of that. At the base rule's mild landscape crop (~12% a
+     * side) that offset is lost in the margin, which is why this was never
+     * needed before; at a phone's much tighter width crop it isn't.
      *
-     * Vertical: shifts the visible window from the drawing's own vertical
-     * centre down to [row 0, row 40.87] -- all the way to the drawing's own
-     * top edge, which is what pushes the head as far down the screen as the
-     * zoom above allows, and up to 40.87 (= 47 / 1.15), well past the
-     * figure's own extent (row 33) and into the surrounding background fill,
-     * since at this gentle a zoom there's room to spare on both sides of it.
-     *
-     * Both expressed as a percentage of the art's own rendered size, which is
-     * what percentages in `transform` resolve against -- so these numbers
-     * hold regardless of viewport size or the zoom factor above.
+     * 6.82% is a fraction of the art's own rendered width, which is what
+     * percentages in `transform` resolve against -- so it holds regardless
+     * of viewport size. No vertical term: at a true cover fit the rendered
+     * height matches the viewport exactly, so there's no vertical overflow
+     * left to pan within -- translateY would be a no-op here.
      */
-    transform: translate(6.82%, 6.52%);
+    transform: translateX(6.82%);
   }
 }
 
