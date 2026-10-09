@@ -643,21 +643,38 @@ th {
      * max(fit, cover), never pushes it past; this overrides font-size
      * directly instead, which a more specific, later rule is free to do.
      *
-     * 47 / 33 (1.4242) was the furthest this can be pushed while keeping the
-     * whole figure: 33 is the row the figure's own detail stops being
-     * distinguishable from the drawing's background fill (measured by
-     * comparing each row's local contrast against clearly-background rows),
-     * so that zoom cropped only the background tail below it, nothing of the
-     * figure itself. Backed off twice since, by request each time -- first to
-     * 1.3, then to 1.15 here -- trading a little more of the downward push
-     * each step for a calmer, smaller-in-frame figure and steadily more
-     * breathing room on the sides, since the horizontal crop eases by the
-     * same factor as the vertical one. At 1.15 the figure is only a little
-     * larger than an unzoomed (1.0) cover fit would render it; going further
-     * starts to erase the point of zooming in at all, since a true 1.0 cover
-     * fit is already the floor this whole rule exists to improve on.
+     * The zoom went through three earlier values -- 1.4242 (the max that kept
+     * the whole figure), then 1.3, then 1.15 by request, each step reading as
+     * a calmer, more zoomed-out frame. This step reverses that and pushes
+     * back up, because 1.15 still left the head's top edge under the
+     * terminal's chips row, and no amount of *this lever* alone -- zoom plus
+     * a vertical pan -- was ever going to clear it without first hitting a
+     * DIFFERENT ceiling: the head's own WIDTH.
+     *
+     * Vertical headroom above the head is fixed at 5 rows (of 47) by the
+     * drawing itself -- a property of the art, not something a transform can
+     * manufacture more of -- so pushing the head further down always means a
+     * smaller visible window, i.e. more zoom. But more zoom crops tighter on
+     * BOTH axes at once: the same factor that pushes the head down also
+     * narrows how many columns are visible, and the head (columns 82-108,
+     * 26 wide) eventually doesn't fit the width any more. On a 360px phone
+     * that ceiling is z=1.54; past it, the head's own edges start being cut
+     * off, which is a worse trade than leaving it under the terminal.
+     *
+     * 1.383 is 3 columns short of that 360px ceiling -- as far as this can
+     * safely go while still keeping the whole head in frame, with a small
+     * margin, on every phone width tested down to 360px (390px clears with
+     * 5.4 columns to spare; a legacy 320px phone loses about a quarter of a
+     * column, imperceptible at this resolution). It still doesn't fully
+     * clear the terminal -- the head now starts at ~14.7% down the screen,
+     * the terminal's own chips row ends around 28%, so some overlap remains,
+     * softened by the terminal's own dim-shadow (header-art.js) the way it
+     * always has been. Clearing it outright would mean cropping into the
+     * head's own width, which is a different, bigger trade-off than "zoom
+     * out a little" -- worth a real conversation before doing that, not a
+     * silent crop.
      */
-    font-size: calc(var(--art-cover) * 1.15);
+    font-size: calc(var(--art-cover) * 1.383);
     /**
      * Re-centred on the head, not on the drawing's own geometry, on both axes.
      *
@@ -669,17 +686,16 @@ th {
      * 110 lands past the head's own edge rather than on it.
      *
      * Vertical: shifts the visible window from the drawing's own vertical
-     * centre down to [row 0, row 40.87] -- all the way to the drawing's own
+     * centre down to [row 0, row 33.99] -- all the way to the drawing's own
      * top edge, which is what pushes the head as far down the screen as the
-     * zoom above allows, and up to 40.87 (= 47 / 1.15), well past the figure's
-     * own extent (row 33) and into the surrounding background fill, since at
-     * this gentle a zoom there's room to spare on both sides of it.
+     * zoom above allows, and up to 33.99 (= 47 / 1.383), just past the
+     * figure's own measured extent (row 33).
      *
      * Both expressed as a percentage of the art's own rendered size, which is
      * what percentages in `transform` resolve against -- so these numbers
      * hold regardless of viewport size or the zoom factor above.
      */
-    transform: translate(6.82%, 6.52%);
+    transform: translate(6.82%, 13.84%);
   }
 }
 
