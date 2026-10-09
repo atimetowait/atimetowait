@@ -625,29 +625,30 @@ th {
    */
   .home-hero .header-art {
     /**
-     * Full figure, real but partial gap -- a deliberate middle point chosen
-     * over two other shapes this hero went through and was pulled back from:
-     * a full-clearance crop (z=2.7) tight enough to cut the torso out of
-     * frame entirely to get there, and a true cover fit (z=1.0, zero crop)
-     * that left the head mostly behind the terminal with no gap at all.
-     * Zooming in to chase separation reads as the figure getting closer, not
-     * as it moving further away, however the maths on where it lands on
-     * screen works out -- so this stays close to a plain cover fit rather
-     * than pushing toward either extreme again.
+     * Full figure, real but partial gap -- a deliberate middle point between
+     * two other shapes this hero went through and was pulled back from: a
+     * full-clearance crop (z=2.7) tight enough to cut the torso out of frame
+     * entirely to get there, and a true cover fit (z=1.0, zero crop) that
+     * left the head mostly behind the terminal with no gap at all. Zooming
+     * in to chase separation reads as the figure getting closer, not as it
+     * moving further away, however the maths on where it lands on screen
+     * works out -- so this stays close to a plain cover fit rather than
+     * pushing toward either extreme again.
      *
-     * 1.383 is the same value landed on two passes ago: the most zoom that
-     * still keeps the head's full WIDTH in frame, with a small margin, on
-     * phones down to 360px wide (found by printing the actual visible
-     * character grid at each candidate and reading it, not by column-count
-     * arithmetic alone -- the same method used for every zoom value in this
-     * rule's history). It shows the figure down through the torso (row 34
-     * of 47), fills the hero edge to edge with no blank background, and
-     * leaves a real, visible overlap with the terminal -- the head starts
-     * at ~14.7% down the screen against the terminal's own ~21.6% edge --
-     * softened by the terminal's own dim-shadow (header-art.js) rather than
-     * eliminated.
+     * 1.3, not the 1.383 landed on two passes ago (the most zoom that still
+     * keeps the head's full width in frame, with a small margin): stepped
+     * back further on request, to ease the crop pressing in on the head's
+     * sides -- "crammed" against its own edges, rather than too small or
+     * badly placed. The two are the same lever here (font-size scales a
+     * monospace grid's row height and column width together, so there is no
+     * way to loosen one without also moving the other), so this costs a
+     * little more terminal overlap to buy it: the head starts at ~13.8% down
+     * the screen now (was ~14.7%) against the terminal's own ~21.6% edge,
+     * softened the same way by the terminal's own dim-shadow
+     * (header-art.js), for about 2 columns more breathing room on every
+     * phone width checked.
      */
-    font-size: calc(var(--art-cover) * 1.383);
+    font-size: calc(var(--art-cover) * 1.3);
     /**
      * Re-centred on the head, not on the drawing's own geometry, on both axes.
      *
@@ -658,17 +659,17 @@ th {
      * this was never needed before.
      *
      * Vertical: shifts the visible window from the drawing's own vertical
-     * centre down to [row 0, row 33.98] -- all the way to the drawing's own
+     * centre down to [row 0, row 36.15] -- all the way to the drawing's own
      * top edge, which is what pushes the head as far down the screen as the
-     * zoom above allows, and up to 33.98 (= 47 / 1.383), just past the
-     * figure's own measured extent (row 33), so the whole figure stays in
-     * frame rather than being cropped away at the waist or shoulders.
+     * zoom above allows, and up to 36.15 (= 47 / 1.3), past the figure's own
+     * measured extent (row 33), so the whole figure stays in frame rather
+     * than being cropped away at the waist or shoulders.
      *
      * Both expressed as a percentage of the art's own rendered size, which is
      * what percentages in `transform` resolve against -- so these numbers
      * hold regardless of viewport size or the zoom factor above.
      */
-    transform: translate(6.82%, 13.85%);
+    transform: translate(6.82%, 11.54%);
   }
 }
 
