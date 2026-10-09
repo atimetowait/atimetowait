@@ -661,9 +661,9 @@ th {
      * Vertical: 4.55% is the most this can shift without opening a gap --
      * it already puts row 0 (the drawing's own top edge) at the very top of
      * the hero, and there is no row above 0 to reveal in exchange for
-     * pushing further. 9.55% goes past that deliberately, by request, at a
-     * fixed zoom: the extra 5 points moves the art's own top edge 5.5% of
-     * the viewport below the hero's top edge, which necessarily uncovers
+     * pushing further. 11.5% goes past that deliberately, by request, at a
+     * fixed zoom: the extra 6.95 points moves the art's own top edge 7.6%
+     * of the viewport below the hero's top edge, which necessarily uncovers
      * that much of the hero's own background colour above it, since nothing
      * else is there to show instead.
      *
@@ -675,13 +675,14 @@ th {
      * point the terminal is starting to float over its own plain background
      * instead for the portion where the art no longer reaches, not over
      * art -- a real, visible change to how the terminal itself reads, and
-     * the reason this wasn't pushed further without showing it first.
+     * the reason each step up from the no-gap value is shown before going
+     * further rather than pushed in one jump.
      *
      * Both expressed as a percentage of the art's own rendered size, which is
      * what percentages in `transform` resolve against -- so these numbers
      * hold regardless of viewport size or the zoom factor above.
      */
-    transform: translate(6.82%, 9.55%);
+    transform: translate(6.82%, 11.5%);
   }
 }
 
