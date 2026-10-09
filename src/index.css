@@ -597,38 +597,52 @@ th {
  */
 @media (max-aspect-ratio: 1/1) {
   /**
-   * Let it grow into the screen.
+   * No cap: let cover fit win outright, so the art is flush with the screen on
+   * every edge with nothing left over.
    *
-   * --art-cap limits how far the art may outgrow the viewport's width, and the
-   * base 1.6 was chosen when portrait meant "a band in the flow": it is exactly
-   * the value that keeps a 2.34:1 drawing readable as a picture standing on its
-   * own. Behind a terminal it is the wrong number -- it left the art as a 272px
-   * strip floating in the middle of an 844px screen, below the terminal rather
-   * than under it, which is the opposite of laying one into the other.
+   * This used to clamp at 3.6x fit, deliberately short of a true cover fit --
+   * reasoned at the time as "filling the height of a 0.46:1 screen with a
+   * 2.34:1 drawing means showing a fifth of its width," which it does, but the
+   * tradeoff that comment accepted was a 272px band of plain background at the
+   * bottom of the hero, because the art's rendered height stopped at ~72% of
+   * the viewport. That reads as an error, not a composition choice.
    *
-   * A true cover fit is not the answer either: filling the height of a 0.46:1
-   * screen with a 2.34:1 drawing means showing a fifth of its width. 3.6 fills
-   * about three quarters of the height and crops to the middle ~28%, which on
-   * this piece still contains the whole figure -- it sits across columns 79-113
-   * of 220, i.e. dead centre, which is why a centred crop can afford to be this
-   * tight.
+   * Setting the cap equal to --art-cover rather than removing it outright
+   * keeps this a one-line override of the shared formula
+   * (`min(max(fit, cover), cap)`) instead of forking it: cover is always >=
+   * itself, so the min() always resolves to cover, and the art fills the
+   * height exactly regardless of how fit and cover compare. For every aspect
+   * ratio this media query matches (width <= height), cover dominates fit
+   * anyway, since the drawing is 2.34:1 and wider than any portrait or square
+   * screen -- so this changes nothing about which value wins, only that
+   * nothing clamps it afterward.
+   *
+   * Scoped to .home-hero specifically: the unscoped bare `.header-art` this
+   * used to be written as also reaches .art-backdrop's copy of this class on
+   * every other page, since .max-aspect-ratio:1/1 matches nearly all phones --
+   * quietly tightening the crop on every backdrop whenever a phone held it in
+   * portrait, which was never the intent.
    */
-  .header-art {
-    --art-cap: calc(var(--art-fit) * 3.6);
-  }
-
-  /* The top and bottom edges fall away so the art reads as something the page
-     is standing in rather than a photograph with a border -- and so the site
-     guide at the bottom and the terminal at the top each have quieter ground
-     under them than the dense middle of the drawing.
-
-     Portrait only, with the crop above: landscape is already showing the piece
-     at close to its own proportions and has no excess height to give away. */
-  .home-hero .header-art-wrap {
-    -webkit-mask-image: linear-gradient(
-      to bottom, transparent 0, #000 7%, #000 70%, transparent 97%);
-    mask-image: linear-gradient(
-      to bottom, transparent 0, #000 7%, #000 70%, transparent 97%);
+  .home-hero .header-art {
+    --art-cap: var(--art-cover);
+    /**
+     * Re-centred on the figure, not on the drawing's own geometry.
+     *
+     * A cover-fit crop is symmetric about the grid's centre column (110 of
+     * 220), but the figure sits at columns 79-113 -- centred on 96, fourteen
+     * columns left of that. At the base rule's mild landscape crop (~12% a
+     * side) a 6% offset is lost in the margin, which is why this was never
+     * needed before. At a true cover fit on a phone, well under a quarter of
+     * the width survives the crop, and a crop window centred on 110 lands
+     * closer to the drawing's background than to the subject -- centred,
+     * technically, and visibly not.
+     *
+     * 6.36% = (110 - 96) / 220, as a fraction of the art's own rendered width,
+     * which is what percentages in transform resolve against. Shifting the
+     * art right by that amount moves the visible window left by the same
+     * fraction, re-centring it on column 96.
+     */
+    transform: translateX(6.36%);
   }
 }
 
