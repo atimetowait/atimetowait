@@ -1664,54 +1664,44 @@ label input {
 }
 
 /**
- * Narrow viewports: the same idea turned ninety degrees.
+ * Narrow viewports: a flat wash, not a gradient.
  *
- * This used to be `display: none` -- a narrow screen has no side margins for
- * the art to live in, so the clear band above would have swallowed the whole
- * thing and there seemed to be no backdrop worth paying for. The cost argument
- * was the weaker half of that: phones were downloading and parsing every one of
- * those 6-14k spans and then throwing the layer away unpainted.
+ * This went through two earlier shapes. First `display: none` -- a narrow
+ * screen has no side margins for the art to live in, so the horizontal mask's
+ * clear band would have swallowed the whole thing, and there seemed to be no
+ * backdrop worth paying for; but that threw away 6-14k downloaded, parsed
+ * spans unpainted, for free. Then a vertical gradient (the art bold at the
+ * top and bottom edges, cleared through the middle, the same idea as the
+ * horizontal desktop mask turned ninety degrees) -- which assumed, like the
+ * desktop version it copied, that there is some band where text never lands,
+ * safe to leave at full strength.
  *
- * What a phone does have is vertical margin -- the space above the first line
- * and below the last, and the run either side of a short entry. So the gradient
- * runs down the page instead of across it: the art is itself at the top and
- * bottom edges, and feathers clear through the middle band where the text
- * column actually is. Same mechanism, same cost, different axis.
+ * On a phone that assumption is just false. Desktop's horizontal margins are
+ * genuinely text-free -- the reading column is centred and narrower than the
+ * viewport at every scroll position, by page layout, not luck. A phone's
+ * column IS the viewport; there is no width left over for a safe edge. And
+ * because this is `position: fixed`, the "top of the viewport" is not the
+ * page header -- it's whatever text has scrolled there, for the entire time
+ * the reader spends on the page. A gradient's unwashed edge is a bet that
+ * nothing dense sits in a piece's own first or last few rows, and it is a bet
+ * two of six pieces lost outright: icymi's top rows and myownkin's bottom
+ * rows are both dense enough to read as visibly cluttered behind the title,
+ * the site guide, and ordinary prose -- not a rare edge case, a coin flip.
  *
- * `--clear`/`--feather` are reused as-is rather than renamed: they mean "half
- * the cleared band" and "how far it takes to get there" in whichever direction
- * the gradient is pointing.
- *
- * In dvh, not the em this was first written as. This media query is keyed to
- * WIDTH (<=864px), which a landscape phone satisfies at 844px wide -- but
- * landscape also means short: 390px tall against the 844px-tall portrait
- * phone these values were tuned against. 14em + 6em of clear+feather is 320px
- * a side, 640px combined, which does not fit inside a 390px viewport at all;
- * the gradient's stop order went negative-then-positive-then-negative, which a
- * browser cannot render as the intended fade, so the whole band degenerated
- * to full-strength art with no cleared reading column underneath it -- what
- * read as the backdrop "breaking". dvh scales with the viewport that is
- * actually short, so the zones shrink proportionally instead of overrunning
- * it. 26.5dvh / 11.4dvh reproduce the original pixel sizes exactly at 844px
- * tall (where this was tuned and still looks the same) and shrink gracefully
- * below it.
+ * So the margin that made the gradient worth drawing (the bold edges) is
+ * exactly the part that is not safe to keep on a phone, regardless of which
+ * piece is showing. What's left is the flat wash: the same color-mix the
+ * gradient's own cleared band used, at the same 78% -- already the figure
+ * this file's own contrast pass settled on (a uniform wash has to clear ~71%
+ * before --text-color-alt's 4.5:1 is safe behind it; 78% was chosen with
+ * seven points to spare) -- applied everywhere instead of only in the middle.
+ * No --clear/--feather left to tune, because there is no longer an edge this
+ * piece's own density can catch anyone out on.
  */
 @media (max-width: 864px) {
-  .art-backdrop {
-    --clear: 26.5dvh;
-    --feather: 11.4dvh;
-  }
-
   .art-backdrop::before {
-    background-image: linear-gradient(
-      to bottom,
-      transparent 0,
-      transparent calc(50% - var(--clear) - var(--feather)),
-      color-mix(in srgb, var(--background-color) 78%, transparent) calc(50% - var(--clear)),
-      color-mix(in srgb, var(--background-color) 78%, transparent) calc(50% + var(--clear)),
-      transparent calc(50% + var(--clear) + var(--feather)),
-      transparent 100%
-    );
+    background-image: none;
+    background-color: color-mix(in srgb, var(--background-color) 78%, transparent);
   }
 }
 
