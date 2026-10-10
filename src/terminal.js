@@ -604,7 +604,7 @@
     chips.setAttribute("role", "group");
     chips.setAttribute("aria-label", "Common commands");
 
-    [["home", "home"], ["help", "help"], ["lost?", "lost"], ["whatami", "whatami"]].forEach(function (c) {
+    [["lost?", "lost"], ["home", "home"], ["help", "help"], ["whatami", "whatami"]].forEach(function (c) {
       var chip = el("button", "tty-chip", c[0]);
       chip.type = "button";
       chip.addEventListener("click", function () {

@@ -2416,6 +2416,35 @@ label input {
 }
 
 /**
+ * Outlined terminal text on small screens.
+ *
+ * With the soft halo off (above) the glyphs sit straight on moving art, and
+ * where a letter crosses a dense patch its edges disappear. A hairline of page
+ * colour hugging every glyph -- eight offsets, so no edge is left bare --
+ * keeps each character's shape traceable without bringing back a blur or a
+ * box. It also covers the `home`/`whatami` prose, which never had a halo.
+ * Same breakpoints as the two blocks it follows, so it applies wherever either
+ * does; desktop is untouched.
+ */
+@media (max-width: 864px), (max-aspect-ratio: 1/1) {
+  .tty-hero .tty-line,
+  .tty-hero .tty-prose,
+  .tty-hero .tty-prompt,
+  .tty-hero .tty-input,
+  .tty-hero .tty-chip {
+    text-shadow:
+      1px 0 0 var(--background-color),
+      -1px 0 0 var(--background-color),
+      0 1px 0 var(--background-color),
+      0 -1px 0 var(--background-color),
+      1px 1px 0 var(--background-color),
+      -1px -1px 0 var(--background-color),
+      1px -1px 0 var(--background-color),
+      -1px 1px 0 var(--background-color);
+  }
+}
+
+/**
  * Accessibility floor. When the reader has asked for more contrast or less
  * transparency, the intermingling is exactly the wrong thing to give them:
  * drop the halo and put the terminal back on a solid ground.
@@ -2467,11 +2496,8 @@ label input {
   margin-top: calc(var(--line-height) * 0.75);
 }
 
-/* Her sign-offs sit alone on a line; let them settle rather than read as
-   another paragraph of body text. */
-.tty-prose p:last-child {
-  color: var(--text-color-alt);
-}
+/* The closing paragraph used to be dimmed as a sign-off; in the terminal
+   that read as the text being washed out, so it keeps full contrast. */
 
 .tty-prose em {
   font-style: italic;
