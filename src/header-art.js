@@ -258,8 +258,8 @@
     // block they sit in. 864px is the same width the stylesheet uses for "the
     // art has no margins to live in". Above it nothing here changes.
     var softGuideMQ = window.matchMedia("(max-width: 864px)");
-    var SOFT_FEATHER = 3;
-    var SOFT_MAX = 3;
+    var SOFT_FEATHER = 2;
+    var SOFT_MAX = 2;
 
     function boxOf(el, m, feather, max) {
       var b = el.getBoundingClientRect();

@@ -2319,6 +2319,25 @@ label input {
 
 
 /**
+ * A lighter halo on the guide at narrow widths.
+ *
+ * The full halo is three stacked blurs of the page colour (4px, 4px, 2px),
+ * which is plenty to lift a few words off dense art but shows as a soft dark
+ * patch behind them in dark theme. Below the width where the art stops having
+ * margins, the guide gets one small blur at partial strength instead: enough
+ * to separate the letters from the glyphs under them, not enough to read as a
+ * shadow. Placed before the portrait block below, so portrait -- which drops
+ * the halo entirely -- still wins there on order alone; above 864px the full
+ * halo is untouched.
+ */
+@media (max-width: 864px) {
+  .home-hero #site-guide summary,
+  .home-hero #site-guide a {
+    text-shadow: 0 0 2px color-mix(in srgb, var(--background-color) 65%, transparent);
+  }
+}
+
+/**
  * No halo on the phone layout.
  *
  * The text halo (a blur of the page colour behind every glyph, border and
