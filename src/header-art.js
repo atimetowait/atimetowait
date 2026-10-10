@@ -249,21 +249,48 @@
     // Everything laid into the art casts a shadow, not just the terminal.
     var OVERLAY_SELECTOR = ".tty-hero, .home-hero #site-guide";
 
-    /** The overlaid elements' boxes in grid coordinates. */
-    function overlayBoxes(m) {
+    // Narrow screens that are not portrait -- a phone held sideways, a browser
+    // window dragged narrow -- still get a shadow (portrait casts none, see
+    // noShadowMQ below), because the art behind the guide there is dense enough
+    // to need one. But one rectangle round the whole guide block reads as a dark
+    // box in dark theme, so below this width the guide's shadow is cast per
+    // line of text instead, and is gentler: it hugs the words rather than the
+    // block they sit in. 864px is the same width the stylesheet uses for "the
+    // art has no margins to live in". Above it nothing here changes.
+    var softGuideMQ = window.matchMedia("(max-width: 864px)");
+    var SOFT_FEATHER = 3;
+    var SOFT_MAX = 3;
+
+    function boxOf(el, m, feather, max) {
+      var b = el.getBoundingClientRect();
+      if (!b.width || !b.height) return null;
+      return {
+        x0: (b.left - m.left) / m.w,
+        x1: (b.right - m.left) / m.w,
+        y0: (b.top - m.top) / m.h,
+        y1: (b.bottom - m.top) / m.h,
+        feather: feather,
+        max: max
+      };
+    }
+
+    /** The overlaid elements' boxes in grid coordinates, each with its own strength. */
+    function overlayBoxes(m, soft) {
       // These are built or re-laid out after this module runs, so re-query each
       // time rather than caching a stale list.
-      var els = document.querySelectorAll(OVERLAY_SELECTOR);
       var out = [];
-      for (var i = 0; i < els.length; i += 1) {
-        var b = els[i].getBoundingClientRect();
-        if (!b.width || !b.height) continue;
-        out.push({
-          x0: (b.left - m.left) / m.w,
-          x1: (b.right - m.left) / m.w,
-          y0: (b.top - m.top) / m.h,
-          y1: (b.bottom - m.top) / m.h
-        });
+      var terminal = document.querySelectorAll(soft ? ".tty-hero" : OVERLAY_SELECTOR);
+      for (var i = 0; i < terminal.length; i += 1) {
+        var tb = boxOf(terminal[i], m, DIM_FEATHER, DIM_MAX);
+        if (tb) out.push(tb);
+      }
+      if (soft) {
+        var lines = document.querySelectorAll(
+          ".home-hero #site-guide summary, .home-hero #site-guide a");
+        for (var j = 0; j < lines.length; j += 1) {
+          var lb = boxOf(lines[j], m, SOFT_FEATHER, SOFT_MAX);
+          if (lb) out.push(lb);
+        }
       }
       return out;
     }
@@ -294,14 +321,15 @@
     function buildDimMap() {
       var m = cellMetrics();
       var off = noShadowMQ.matches;
-      var boxes = off ? [] : overlayBoxes(m);
+      var soft = !off && softGuideMQ.matches;
+      var boxes = off ? [] : overlayBoxes(m, soft);
 
       // Cheap identity for "the same shadow as last time". Rounded to whole
       // cells, which is the resolution the map is computed at anyway, so the
       // terminal growing by a fraction of a line does not force a rebuild.
       // Folding the mode in means rotating a device, or resizing a window across
       // the portrait boundary, rebuilds the map instead of keeping a stale one.
-      var key = (off ? "off:" : "on:") + boxes
+      var key = (off ? "off:" : soft ? "soft:" : "on:") + boxes
         .map(function (b) {
           return [b.x0 | 0, b.x1 | 0, b.y0 | 0, b.y1 | 0].join(",");
         })
@@ -322,17 +350,14 @@
 
       for (var row = 0; row < ROWS; row += 1) {
         for (var col = 0; col < COLS; col += 1) {
-          var nearest = Infinity;
+          var steps = 0;
           for (var i = 0; i < boxes.length; i += 1) {
             var box = boxes[i];
             var dx = col < box.x0 ? box.x0 - col : (col > box.x1 ? col - box.x1 : 0);
             var dy = row < box.y0 ? box.y0 - row : (row > box.y1 ? row - box.y1 : 0);
             var dist = Math.sqrt(dx * dx + dy * dy);
-            if (dist < nearest) nearest = dist;
-          }
+            if (dist >= box.feather) continue;
 
-          var steps = 0;
-          if (nearest < DIM_FEATHER) {
             // Modulate then clamp, rather than scaling the whole falloff by
             // noise: that way the core under the text is reliably dim enough to
             // read against, and it is the *edge* that goes ragged and lets the
@@ -340,9 +365,10 @@
             // Static seed, not a timestamp: an animated edge made the shadow
             // crawl, which read as another drifting blob. The raggedness should
             // be a fixed shape -- which is also what makes this cacheable.
-            var f = 1 - nearest / DIM_FEATHER;
+            var f = 1 - dist / box.feather;
             f = Math.min(1, f * (0.8 + 0.6 * noise(col * 1.7, row * 1.7, 0)));
-            steps = Math.round(f * DIM_MAX);
+            var s = Math.round(f * box.max);
+            if (s > steps) steps = s;
           }
           dimMap[row * COLS + col] = steps;
         }
