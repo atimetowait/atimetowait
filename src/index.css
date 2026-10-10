@@ -1569,6 +1569,25 @@ label input {
   opacity: 0.34;
 }
 
+/* Size the cover fit from the layer itself rather than from viewport units.
+   The layer is `position: fixed; inset: 0`, but in some in-app browsers
+   (Instagram's, on Android) 100dvh is not the height that box ends up with, so
+   the art was sized to ~80% of it and left a band of bare page at the top and
+   bottom. A container query unit is the layer's own measure by definition, so
+   the two cannot disagree; the slight overscan hides rounding at the edges.
+   Browsers without container units keep the viewport-unit formula above. */
+@supports (width: 1cqw) {
+  .art-backdrop {
+    container-type: size;
+  }
+
+  .art-backdrop .header-art {
+    --art-fit: calc(100cqw / (var(--art-cols, 220) * 0.6));
+    --art-cover: calc(100cqh / (var(--art-rows, 47) * 1.2));
+    font-size: calc(max(var(--art-fit), var(--art-cover)) * 1.02);
+  }
+}
+
 /* Dark theme has more contrast headroom to spend (see the table above), so it
    can run brighter without threatening --text-color-alt's 4.5:1. Following
    the sheet's own rule: never define a colour only inside a media query --
