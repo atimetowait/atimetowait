@@ -1847,6 +1847,32 @@ label input {
   background: var(--background-color-alt);
 }
 
+/* On touch the `lost?` chip is the site guide (terminal.js: commands.lost), so
+   the bottom-left copy goes. Keyed to the same (hover: none) that reveals the
+   chips, so nobody is left with neither, and to html.home-terminal, so with JS
+   off -- no terminal, no chips -- the guide is still there. */
+@media (hover: none) {
+  html.home-terminal .home-hero #site-guide {
+    display: none;
+  }
+}
+
+/* `lost`'s lines arrive one by one, each wiped in left to right the way the
+   boot text is typed, rather than appearing as a block. */
+.tty-pop {
+  animation: tty-pop 0.32s steps(12, end) backwards;
+  animation-delay: calc(var(--pop, 0) * 0.14s);
+}
+
+@keyframes tty-pop {
+  from { clip-path: inset(0 100% 0 0); }
+  to   { clip-path: inset(0 0 0 0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tty-pop { animation: none; }
+}
+
 .tty-prompt-row {
   display: flex;
   align-items: baseline;

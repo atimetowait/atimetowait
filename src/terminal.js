@@ -377,6 +377,29 @@
     print("art: " + mode);
   };
 
+  /**
+   * The site guide, said by the terminal.
+   *
+   * On touch the bottom-left guide is hidden (src/index.css) and this is the
+   * way out of the homepage instead, so the links are read from that same
+   * <nav> rather than listed here -- uncommenting a section in
+   * demo/template.html restores it in both places at once. The lines arrive
+   * one after another (.tty-pop), so the guide reads as coming out of the
+   * terminal rather than having been there all along.
+   */
+  commands.lost = function () {
+    var links = document.querySelectorAll("#site-guide .site-guide a[href]");
+    if (!links.length) return print("there's nowhere else yet.", "tty-dim");
+
+    print("are You lost?", "tty-strong tty-pop").style.setProperty("--pop", 0);
+    for (var i = 0; i < links.length; i += 1) {
+      printCells(
+        ["  → ", { text: links[i].textContent, href: links[i].getAttribute("href") }],
+        "tty-pop"
+      ).style.setProperty("--pop", i + 1);
+    }
+  };
+
   commands.home = function () {
     printProse("#intro");
   };
@@ -566,7 +589,10 @@
      * are both keys, and autofocus is deliberately withheld on touch (see
      * boot()), so a phone reader arrived at a prompt with no completion, no
      * history and no hint that any particular word would work. These are the
-     * four commands the boot message already points at, as buttons.
+     * commands the boot message already points at, as buttons -- plus `lost`,
+     * which stands in for the site guide on touch. It takes `ls`'s place
+     * rather than adding a fifth chip, since five wrap to a second row on a
+     * phone; `ls` still works typed.
      *
      * They go through run() rather than carrying their own behaviour, so there
      * is one definition of what `home` does and the echoed line looks exactly as
@@ -578,11 +604,11 @@
     chips.setAttribute("role", "group");
     chips.setAttribute("aria-label", "Common commands");
 
-    ["home", "help", "ls", "whatami"].forEach(function (name) {
-      var chip = el("button", "tty-chip", name);
+    [["home", "home"], ["help", "help"], ["lost?", "lost"], ["whatami", "whatami"]].forEach(function (c) {
+      var chip = el("button", "tty-chip", c[0]);
       chip.type = "button";
       chip.addEventListener("click", function () {
-        run(name);
+        run(c[1]);
       });
       chips.appendChild(chip);
     });
