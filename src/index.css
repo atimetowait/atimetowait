@@ -2319,21 +2319,27 @@ label input {
 
 
 /**
- * A lighter halo on the guide at narrow widths.
+ * The guide at narrow widths: a crisp edge on the letters, not a shade.
  *
- * The full halo is three stacked blurs of the page colour (4px, 4px, 2px),
- * which is plenty to lift a few words off dense art but shows as a soft dark
- * patch behind them in dark theme. Below the width where the art stops having
- * margins, the guide gets one small blur at partial strength instead: enough
- * to separate the letters from the glyphs under them, not enough to read as a
- * shadow. Placed before the portrait block below, so portrait -- which drops
- * the halo entirely -- still wins there on order alone; above 864px the full
- * halo is untouched.
+ * On desktop the guide is lifted off the art two ways: three stacked blurs of
+ * the page colour behind every glyph, and header-art.js fading the art round
+ * the whole block. On a small screen both read as a shaded patch behind the
+ * words rather than as the words sitting in the art. So below 864px, at any
+ * orientation, header-art.js casts no shadow round the guide, and the letters
+ * carry their own legibility instead: a 1px page-colour outline drawn as four
+ * zero-blur offsets. It traces each letter's own edge and nothing else -- no
+ * blur radius, so nothing spreads into the art around or between the words,
+ * which stays at its full tone right up to them. Above 864px the full halo is
+ * untouched.
  */
 @media (max-width: 864px) {
   .home-hero #site-guide summary,
   .home-hero #site-guide a {
-    text-shadow: 0 0 2px color-mix(in srgb, var(--background-color) 65%, transparent);
+    text-shadow:
+      1px 0 0 var(--background-color),
+      -1px 0 0 var(--background-color),
+      0 1px 0 var(--background-color),
+      0 -1px 0 var(--background-color);
   }
 }
 
@@ -2347,13 +2353,12 @@ label input {
  * a black smudge, so the portrait layout drops it and keeps the art at one
  * uniform tone. Keyed to the same `max-aspect-ratio: 1/1` the portrait hero
  * uses, and to the same condition header-art.js checks before casting its
- * shadow, so the two switch off together. Desktop and landscape -- where the
- * art is dense behind the guide and the halo is what keeps it legible -- are
- * untouched. Sits after every base halo rule above so it wins on order alone.
+ * shadow, so the two switch off together. Covers the terminal only: the site
+ * guide's narrow-width treatment is the crisp-outline block above, which
+ * already applies here. Desktop and landscape are untouched. Sits after every
+ * base halo rule above so it wins on order alone.
  */
 @media (max-aspect-ratio: 1/1) {
-  .home-hero #site-guide summary,
-  .home-hero #site-guide a,
   .tty-hero .tty-line,
   .tty-hero .tty-prompt,
   .tty-hero .tty-input,

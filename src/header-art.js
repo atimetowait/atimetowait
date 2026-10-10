@@ -249,17 +249,14 @@
     // Everything laid into the art casts a shadow, not just the terminal.
     var OVERLAY_SELECTOR = ".tty-hero, .home-hero #site-guide";
 
-    // Narrow screens that are not portrait -- a phone held sideways, a browser
-    // window dragged narrow -- still get a shadow (portrait casts none, see
-    // noShadowMQ below), because the art behind the guide there is dense enough
-    // to need one. But one rectangle round the whole guide block reads as a dark
-    // box in dark theme, so below this width the guide's shadow is cast per
-    // line of text instead, and is gentler: it hugs the words rather than the
-    // block they sit in. 864px is the same width the stylesheet uses for "the
-    // art has no margins to live in". Above it nothing here changes.
+    // Below 864px -- the width where the art stops having margins -- the site
+    // guide casts no shadow at all, at any orientation (portrait already casts
+    // none, see noShadowMQ below). Any fade of the art round the words, however
+    // gentle, reads as a shaded patch behind them on a small screen; the guide
+    // keeps its legibility there through a crisp edge on its own letters in
+    // index.css instead, which leaves the art untouched right up to the words.
+    // The terminal keeps its shadow. Above 864px nothing here changes.
     var softGuideMQ = window.matchMedia("(max-width: 864px)");
-    var SOFT_FEATHER = 2;
-    var SOFT_MAX = 2;
 
     function boxOf(el, m, feather, max) {
       var b = el.getBoundingClientRect();
@@ -283,14 +280,6 @@
       for (var i = 0; i < terminal.length; i += 1) {
         var tb = boxOf(terminal[i], m, DIM_FEATHER, DIM_MAX);
         if (tb) out.push(tb);
-      }
-      if (soft) {
-        var lines = document.querySelectorAll(
-          ".home-hero #site-guide summary, .home-hero #site-guide a");
-        for (var j = 0; j < lines.length; j += 1) {
-          var lb = boxOf(lines[j], m, SOFT_FEATHER, SOFT_MAX);
-          if (lb) out.push(lb);
-        }
       }
       return out;
     }
