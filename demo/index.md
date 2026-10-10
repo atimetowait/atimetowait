@@ -1,6 +1,7 @@
 ---
 title: atimetowait
 subtitle: freya langley // aCadogan
+summary: "everything is matched with its hexadecimal translation, dont know what it means though — freya langley // aCadogan"
 lang: en
 toc-title: Site Guide
 terminal-home: true
