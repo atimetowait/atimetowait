@@ -2347,6 +2347,22 @@ label input {
   .tty-hero .tty-chip {
     box-shadow: none;
   }
+
+  /* With the halo gone the only thing still drawing a "box" round the
+     navigation is the outlines themselves: a full-strength accent line round
+     the terminal and round each of the four chips, which in dark theme is a
+     bright white rectangle. Text stays at full contrast -- that is what keeps
+     it legible; the outline only has to say "this is tappable". So the lines
+     drop to a faint tint of the accent, mixed with transparent rather than
+     with the page colour so they stay faint whatever art is behind them.
+     The accessibility floor below still puts the solid, full-strength borders
+     back for anyone who has asked for more contrast. */
+  .tty-hero {
+    border-color: color-mix(in srgb, var(--accent) 30%, transparent);
+  }
+  .tty-hero .tty-chip {
+    border-color: color-mix(in srgb, var(--accent) 38%, transparent);
+  }
 }
 
 /**
