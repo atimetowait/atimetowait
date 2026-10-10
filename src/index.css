@@ -1565,7 +1565,7 @@ label input {
  * formulas agree exactly, since the cap only ever bound cover.
  */
 .art-backdrop .header-art {
-  font-size: max(var(--art-fit), var(--art-cover));
+  font-size: calc(max(var(--art-fit), var(--art-cover)) * var(--art-boost, 1));
   opacity: 0.34;
 }
 
@@ -1584,7 +1584,7 @@ label input {
   .art-backdrop .header-art {
     --art-fit: calc(100cqw / (var(--art-cols, 220) * 0.6));
     --art-cover: calc(100cqh / (var(--art-rows, 47) * 1.2));
-    font-size: calc(max(var(--art-fit), var(--art-cover)) * 1.02);
+    font-size: calc(max(var(--art-fit), var(--art-cover)) * 1.02 * var(--art-boost, 1));
   }
 }
 

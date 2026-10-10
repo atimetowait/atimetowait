@@ -426,3 +426,61 @@ function initBackdropDetail() {
 }
 
 initBackdropDetail();
+
+/**
+ * IN-APP BROWSERS: MAKE THE BACKDROP ACTUALLY COVER
+ *
+ * Instagram's (and Facebook's) in-app browser leaves the backdrop short: the
+ * art lands at roughly 80% of the screen's height, centred, with bare page
+ * above and below. Its viewport units and fixed-layer geometry do not agree
+ * with what it paints, so no unit in the stylesheet can be trusted there.
+ *
+ * So for those browsers only -- matched on the user agent, which is the one
+ * thing that identifies them -- measure the art after layout and scale it up by
+ * exactly the shortfall, through --art-boost (see .art-backdrop .header-art in
+ * src/index.css). It checks against every height the browser offers and takes
+ * the largest, and re-runs on resize, so it can only ever over-cover. Every
+ * other browser returns at the first line and keeps the page's no-JS promise.
+ */
+function initInAppBackdropFit() {
+  if (!/Instagram|FBAN|FBAV|FB_IAB/i.test(navigator.userAgent)) return;
+
+  const wrap = document.querySelector(".art-backdrop");
+  if (!wrap) return;
+
+  const fit = () => {
+    const pre = wrap.querySelector(".header-art");
+    if (!pre) return;
+
+    const vv = window.visualViewport;
+    const need = Math.max(
+      window.innerHeight,
+      vv ? vv.height : 0,
+      document.documentElement.clientHeight,
+      wrap.clientHeight
+    );
+    const needW = Math.max(
+      window.innerWidth,
+      vv ? vv.width : 0,
+      document.documentElement.clientWidth,
+      wrap.clientWidth
+    );
+
+    // Measure at the current boost and correct from there, so repeated runs
+    // converge instead of compounding.
+    const current = parseFloat(wrap.style.getPropertyValue("--art-boost")) || 1;
+    const box = pre.getBoundingClientRect();
+    const shortfall = Math.max(need / box.height, needW / box.width);
+    // Already covering: leave it. Never shrinks, so repeated runs settle.
+    if (!isFinite(shortfall) || shortfall <= 1) return;
+
+    const next = Math.max(1, current * shortfall * 1.02);
+    wrap.style.setProperty("--art-boost", next.toFixed(3));
+  };
+
+  fit();
+  window.addEventListener("load", fit);
+  window.addEventListener("resize", fit);
+}
+
+initInAppBackdropFit();
