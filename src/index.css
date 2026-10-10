@@ -2319,6 +2319,37 @@ label input {
 
 
 /**
+ * No halo on the phone layout.
+ *
+ * The text halo (a blur of the page colour behind every glyph, border and
+ * caret) and header-art.js's dim-shadow are one treatment: together they let
+ * the terminal and site guide read as laid into the art. On a phone the art
+ * behind them is mostly sparse background, and in dark theme the blur shows as
+ * a black smudge, so the portrait layout drops it and keeps the art at one
+ * uniform tone. Keyed to the same `max-aspect-ratio: 1/1` the portrait hero
+ * uses, and to the same condition header-art.js checks before casting its
+ * shadow, so the two switch off together. Desktop and landscape -- where the
+ * art is dense behind the guide and the halo is what keeps it legible -- are
+ * untouched. Sits after every base halo rule above so it wins on order alone.
+ */
+@media (max-aspect-ratio: 1/1) {
+  .home-hero #site-guide summary,
+  .home-hero #site-guide a,
+  .tty-hero .tty-line,
+  .tty-hero .tty-prompt,
+  .tty-hero .tty-input,
+  .tty-hero .tty-chip {
+    text-shadow: none;
+  }
+
+  .tty-hero,
+  .tty-hero .tty-caret,
+  .tty-hero .tty-chip {
+    box-shadow: none;
+  }
+}
+
+/**
  * Accessibility floor. When the reader has asked for more contrast or less
  * transparency, the intermingling is exactly the wrong thing to give them:
  * drop the halo and put the terminal back on a solid ground.

@@ -285,14 +285,23 @@
     var dimMap = new Uint8Array(COUNT);
     var dimKey = "";
 
+    // The portrait/phone layout runs the art at one uniform tone: no shadow is
+    // cast around the terminal or the site guide there. This is the same
+    // condition index.css uses to drop the text halo for that layout, so the
+    // two effects come and go together. Desktop and landscape keep both.
+    var noShadowMQ = window.matchMedia("(max-aspect-ratio: 1/1)");
+
     function buildDimMap() {
       var m = cellMetrics();
-      var boxes = overlayBoxes(m);
+      var off = noShadowMQ.matches;
+      var boxes = off ? [] : overlayBoxes(m);
 
       // Cheap identity for "the same shadow as last time". Rounded to whole
       // cells, which is the resolution the map is computed at anyway, so the
       // terminal growing by a fraction of a line does not force a rebuild.
-      var key = boxes
+      // Folding the mode in means rotating a device, or resizing a window across
+      // the portrait boundary, rebuilds the map instead of keeping a stale one.
+      var key = (off ? "off:" : "on:") + boxes
         .map(function (b) {
           return [b.x0 | 0, b.x1 | 0, b.y0 | 0, b.y1 | 0].join(",");
         })
