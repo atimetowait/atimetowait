@@ -1,15 +1,33 @@
 /* The blog's own look: the no-style-please theme (riggraz/no-style-please, MIT),
    ported by hand from its SCSS into plain CSS so the site needs no Jekyll build.
    Deliberately shares nothing with index.css -- the blog is meant to look like a
-   different, plainer room of the same house. Dark mode is the theme's own trick:
-   invert the whole page. */
+   different, plainer room of the same house. Colours are the homepage's own. */
 
-html, body { background: white; }
+/* Colours, as the homepage has them: black on white, white on black, and one red
+   for everything that can be followed. The theme's own dark mode inverted the whole
+   page, which would turn the red into cyan, so both modes are real values here.
+   The red is the homepage's --art-red (#ff3b4e) on black; on white it is darkened
+   to #c4162a, since the bright one is only ~3.5:1 against white and this is text. */
+:root {
+  --fg: #000;
+  --bg: #fff;
+  --dim: #666;
+  --red: #c4162a;
+  --mark: #ffd9dd;
+}
+
+body[a="dark"] { --fg: #fff; --bg: #000; --dim: #aaa; --red: #ff3b4e; --mark: #4a1118; }
+
+@media (prefers-color-scheme: dark) {
+  body[a="auto"] { --fg: #fff; --bg: #000; --dim: #aaa; --red: #ff3b4e; --mark: #4a1118; }
+}
+
+html, body { background: var(--bg); }
 
 html { height: 100%; scroll-behavior: smooth; }
 
 body {
-  color: black;
+  color: var(--fg);
   font-family: monospace;
   font-size: 16px;
   line-height: 1.4;
@@ -18,13 +36,12 @@ body {
   overflow-wrap: break-word;
 }
 
-body[a="dark"] { filter: invert(1); }
-body[a="dark"] img { filter: invert(1); }
+/* `html` needs the colour too, or an `a="dark"` body sits on a white page edge. */
+html:has(body[a="dark"]) { background: #000; }
+@media (prefers-color-scheme: dark) { html:has(body[a="auto"]) { background: #000; } }
 
-@media (prefers-color-scheme: dark) {
-  body[a="auto"] { filter: invert(1); }
-  body[a="auto"] img { filter: invert(1); }
-}
+a { color: var(--red); }
+a:hover, a:focus-visible { color: var(--fg); }
 
 .w { max-width: 640px; margin: 0 auto; padding: 4rem 2rem; }
 
@@ -35,15 +52,15 @@ hr { margin: 2rem 0; text-align: center; border: 0; }
 hr:before { content: "/////"; }
 p { margin: 1rem 0; }
 li { margin: 0.4rem 0; }
-*:target { background: yellow; }
+*:target { background: var(--mark); }
 
 table { width: 100%; }
-table, th, td { border: thin solid black; border-collapse: collapse; padding: 0.4rem; }
+table, th, td { border: thin solid var(--fg); border-collapse: collapse; padding: 0.4rem; }
 
-code { color: white; background: black; }
+code { color: var(--bg); background: var(--fg); }
 pre code { display: block; overflow-x: auto; white-space: pre-wrap; padding: 1rem; }
 
-blockquote { font-style: italic; border: thin solid black; padding: 1rem; }
+blockquote { font-style: italic; border: thin solid var(--fg); padding: 1rem; }
 blockquote p { margin: 0; }
 
 img { max-width: 100%; display: block; margin: 0 auto; }

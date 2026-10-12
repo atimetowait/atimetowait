@@ -133,8 +133,7 @@ def main() -> None:
 
     intro = (
         f"<header>\n<h1>blog</h1>\n<p>{BLURB}</p>\n</header>\n"
-        '<ul>\n  <li><a href="/">back to atimetowait.com</a></li>\n'
-        '  <li><a href="/blog/feed.xml">rss</a></li>\n</ul>\n'
+        '<ul>\n  <li><a href="/">back to atimetowait.com</a></li>\n</ul>\n'
     )
     stream = "\n".join(render_day(d, True) for d in days) or "<p>nothing here yet.</p>"
     (OUT / "index.html").write_text(
