@@ -1,5 +1,5 @@
 {
-  "generated": "2026-10-09",
+  "generated": "2026-10-12",
   "sections": [
     {
       "name": "home",
@@ -10,6 +10,11 @@
       "name": "musings",
       "href": "/musings/",
       "description": "the writing, newest first"
+    },
+    {
+      "name": "blog",
+      "href": "/blog/",
+      "description": "plainer writing, in another theme"
     },
     {
       "name": "sightseeing",

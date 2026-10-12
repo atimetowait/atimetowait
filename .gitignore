@@ -9,3 +9,14 @@ result
 # Python bytecode cache
 __pycache__/
 *.pyc
+
+# Cloudflare Worker (integrations/discord-blog): dependencies, Wrangler's local
+# cache (which records the Cloudflare account) and local secrets must never be
+# committed -- this repo is published whole by the Pages workflow.
+node_modules/
+.wrangler/
+.dev.vars
+.dev.vars.*
+.env
+.env.*
+integrations/discord-blog/.workers.dev

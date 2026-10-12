@@ -1,0 +1,15 @@
+name = "blog-post"
+main = "src/index.js"
+compatibility_date = "2026-01-01"
+
+[vars]
+GITHUB_REPO = "atimetowait/atimetowait"
+GITHUB_BRANCH = "main"
+# The time zone the @HH:MM stamps are written in, and the one that decides which
+# day an entry belongs to. An IANA name, e.g. "America/New_York".
+BLOG_TIMEZONE = "America/New_York"
+
+# Secrets, set with `wrangler secret put` (see README.md), never in this file:
+#   DISCORD_PUBLIC_KEY   verifies requests really came from Discord
+#   ALLOWED_USER_ID      your Discord user ID -- the only account that may post
+#   GITHUB_TOKEN         fine-grained token, Contents: read & write on this repo only

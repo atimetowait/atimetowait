@@ -27,6 +27,7 @@ MANIFEST_OUTPUT = ROOT / "site-manifest.json"
 SECTIONS = [
     {"name": "home", "href": "/", "description": "who i am, and what this is"},
     {"name": "musings", "href": "/musings/", "description": "the writing, newest first"},
+    {"name": "blog", "href": "/blog/", "description": "plainer writing, in another theme"},
     {"name": "sightseeing", "href": "/sightseeing/", "description": "photographs, mostly from before"},
     {"name": "listen", "href": "/listen/", "description": "music, under whichever name"},
     {"name": "bookkeeping", "href": "/bookkeeping/", "description": "a running ledger of small things"},

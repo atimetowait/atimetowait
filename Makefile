@@ -12,7 +12,8 @@ HTML_PAGES=index.html \
 	bookkeeping/index.html \
 	sightseeing/index.html \
 	listen/index.html \
-	archive/index.html
+	archive/index.html \
+	blog/index.html
 
 JOURNAL_ENTRIES=$(filter-out demo/musings/_%.md,$(wildcard demo/musings/*.md))
 JOURNAL_HTML=$(patsubst demo/musings/%.md,musings/%/index.html,$(JOURNAL_ENTRIES))
@@ -61,7 +62,7 @@ clean:
 	rm -f demo/header-art.generated.html demo/header-art.m.generated.html
 	rm -f demo/art/*.generated.html
 	rm -f sightseeing/index.html
-	rm -rf musings bookkeeping listen archive
+	rm -rf musings bookkeeping listen archive blog
 
 # One script produces the musings index, the archive page and the terminal's
 # manifest; they share the same front-matter parse.
@@ -120,6 +121,12 @@ demo/art/%.generated.html: demo/art/%.txt scripts/build-header-art.py
 demo/art/%.m.generated.html: demo/art/%.txt scripts/build-header-art.py
 	python3 scripts/build-header-art.py --source $< --output $@ --class art-backdrop --downsample 2 \
 		--hires /demo/art/$*.generated.html $(if $(FLARE_$*),--flare=$(FLARE_$*)) $(if $(TIERS_$*),--tiers=$(TIERS_$*))
+
+# The blog: a different theme on the same origin (src/blog.css), so it does not go
+# through $(PANDOC). One script builds the stream, the per-day pages and the feed
+# from demo/blog/YYYY-MM-DD.md; see its docstring for the entry format.
+blog/index.html: $(wildcard demo/blog/*.md) demo/blog-template.html scripts/build-blog.py
+	python3 scripts/build-blog.py
 
 musings/index.html: demo/musings.generated.md demo/template.html Makefile $(ART_HTML)
 	mkdir -p musings
