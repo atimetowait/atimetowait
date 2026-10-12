@@ -67,6 +67,12 @@ def load_days() -> list[dict]:
     return sorted(days, key=lambda d: d["date"], reverse=True)
 
 
+def clock(time: str) -> str:
+    """'13:40' -> '1:40 pm'. Files stay 24-hour (so they sort); readers get 12."""
+    hh, mm = (int(x) for x in time.split(":"))
+    return f"{hh % 12 or 12}:{mm:02d} {'am' if hh < 12 else 'pm'}"
+
+
 def render_day(day: dict, link_heading: bool) -> str:
     date = day["date"]
     heading = f'<a href="/blog/{date}/">{date}</a>' if link_heading else str(date)
@@ -75,7 +81,7 @@ def render_day(day: dict, link_heading: bool) -> str:
         anchor = e["time"].replace(":", "")
         out.append(
             f'<div class="entry" id="{date}-{anchor}">'
-            f'<span class="time"><a href="/blog/{date}/#{date}-{anchor}">{e["time"]}</a></span>'
+            f'<span class="time"><a href="/blog/{date}/#{date}-{anchor}">{clock(e["time"])}</a></span>'
             f"{markdown(e['body'])}</div>"
         )
     out.append("</section>")
@@ -101,7 +107,7 @@ def render_feed(days: list[dict]) -> str:
             anchor = e["time"].replace(":", "")
             link = f'{SITE}/blog/{d["date"]}/#{d["date"]}-{anchor}'
             items.append(
-                f"  <entry>\n    <title>{d['date']} {e['time']}</title>\n"
+                f"  <entry>\n    <title>{d['date']} {clock(e['time'])}</title>\n"
                 f'    <link href="{link}"/>\n    <id>{link}</id>\n'
                 f"    <updated>{stamp}</updated>\n"
                 f'    <content type="html">{html.escape(markdown(e["body"]))}</content>\n'
