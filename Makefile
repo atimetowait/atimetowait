@@ -72,7 +72,10 @@ demo/musings.generated.md demo/archive.generated.md site-manifest.json &: $(JOUR
 # --include-before-body inserts the file verbatim: no template interpolation and no
 # markdown parsing, so the art's backslashes, $$, {} and ~ survive untouched.
 index.html: demo/index.md demo/template.html demo/header-art.m.generated.html demo/header-art.generated.html Makefile
-	$(PANDOC) --include-before-body=demo/header-art.m.generated.html -i demo/index.md -o $@
+	# hard_line_breaks, like the journal entries: pressing Enter once in
+	# demo/index.md is a line break on the page and in the terminal's `home`
+	# and `whatami`, with no trailing <br> to remember.
+	$(JOURNAL_PANDOC) --include-before-body=demo/header-art.m.generated.html -i demo/index.md -o $@
 
 demo/header-art.generated.html: demo/header-art.txt scripts/build-header-art.py
 	python3 scripts/build-header-art.py

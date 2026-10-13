@@ -1752,8 +1752,10 @@ label input {
   /* The smaller of a line count and a share of the screen: the count is the
      considered choice and governs on a desktop, the viewport governs wherever
      that choice would not fit -- a landscape phone being the case that used to
-     push the prompt row off the bottom of a page that cannot scroll. */
-  max-height: min(calc(var(--line-height) * 16), 42dvh);
+     push the prompt row off the bottom of a page that cannot scroll.
+     Sized so the longest passage (`whatami`) reads without scrolling: 16 lines
+     was short of it by half, and a short answer simply does not use the room. */
+  max-height: min(calc(var(--line-height) * 36), 72dvh);
   overflow-y: auto;
   overflow-x: auto;
   margin-bottom: calc(var(--line-height) * 0.3);
@@ -1763,7 +1765,12 @@ label input {
 .tty-line {
   line-height: var(--line-height);
   white-space: pre-wrap;
-  overflow-wrap: anywhere;
+  /* Lines wrap between words and never inside one: a word too long for the
+     line stays whole and the output scrolls sideways (.tty-out is overflow-x:
+     auto) rather than being cut in two. */
+  overflow-wrap: normal;
+  word-break: normal;
+  hyphens: none;
 }
 
 .tty-dim    { color: var(--text-color-alt); }
@@ -2506,7 +2513,24 @@ label input {
   color: var(--text-color);
 }
 
+/* One Enter in demo/index.md is one line break, nothing more. The sitewide
+   `br + br` rule (a blank line between double breaks) matches any two <br>
+   siblings even with a sentence between them -- `+` skips text -- so every
+   break after the first in a paragraph was picking up an extra line. Undone
+   for the homepage prose, on the page and inside the terminal. */
+.home-prose br,
+.tty-prose br {
+  display: inline;
+  content: normal;
+  margin: 0;
+}
+
 .tty-prose p {
+  /* The sitewide `p` rule hyphenates and will break a word to fit; in the
+     terminal a word stays in one piece, same as .tty-line above. */
+  hyphens: none;
+  overflow-wrap: normal;
+  word-break: normal;
   line-height: var(--line-height);
   margin: 0;
 }
