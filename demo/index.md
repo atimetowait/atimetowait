@@ -10,30 +10,34 @@ bare-header: true
 <hr>
 
 ::: {#intro .home-prose}
-Hey,
+hey hi - my name is alice.
+i'm a composer, writer, and engineer from northern virginia
 
-my name is alice. i'm a songwriter, composer, and artist from northern va.
-i've published music under multiple aliases throughout the years,
+i currently publish under the moniker- *freya langley*
 
-<em>i currently release as - [freya langley]{.glitch}</em>
+i've released a lot over the past ten or so years, a good archive is kept on soundcloud: 
+/atimetowait & atimetowait.bandcamp.com
+code for this website is available on github: @atimetowait
 
-the writings are a lot about what chronic illness is, the aspects of grief, into what getting better naturally is.
-things take time,
-
-be well<br>
-xoxo
-
--a.c.
-
-xoxo
+i'm always open to work with anyone. engineering, production, send me a note: 
+atimetowait@gmail.com
 :::
 
 <hr>
 <details open class="details-plain" id="whatami">
 <summary>What 'atimetowait' means, and a bit more about myself.</summary>
 <div class="home-prose">
-*'atimetowait'* was originally the name of a project I created right after I began chemo-therapy - around 15 or so.<br> <br>The sentiment of it being that this all was just, 'a time to wait' - so I created, wrote, produced thousands of songs, demos, tracks...some of which that went places, others..just being a way to look back.
-<br><br>I'm proud, and also quite relieved to say much of it is behind me. Other than the regular hiccups that appear with life. <br>It's navigating much of things like everyone else is. <br><br>I'm quite easy to reach at *atimetowait@gmail.com* as well as - @atimewaited on Instagram. <br><br>For either commission opportunities, collabs, or someone to chat :) be around, <br><br>
+i first started publishing music in 2016, always within the electronic/ambient sphere. 
+i started using my voice more after, singing on anything contemporary i could find.
+
+'atimetowait' relates back to when i first started chemotherapy at the time too. dating to it just being, "a time to wait", 
+it's been a while since then but a lot of the same themes of grief, illness, and trying to document it all stays pretty present throughout.
+
+i write a novel you can find on the site: 
+*this bias is beginning to show*.
+a large wip but it's something that follows the same motifs of the music
+hope there is something for you,
+xoxoxo
 -alice
 </div>
 </details>
