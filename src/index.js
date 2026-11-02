@@ -484,3 +484,53 @@ function initInAppBackdropFit() {
 }
 
 initInAppBackdropFit();
+
+/**
+ * THE STORY, ALL AT ONCE
+ *
+ * /undermyskinyoucanbeanything/ shows the whole story as one paragraph with no scrolling: find
+ * the largest font size at which it fits the space the page leaves for it.
+ * Binary search, since wrapping makes the height a step function of the size.
+ *
+ * MIN is a floor for legibility, not for fit: on a screen small enough that the
+ * story only fits below it (most phones), it stays at MIN and scrolls instead,
+ * because unreadably small type is worse than a scroll.
+ */
+function initStoryFit() {
+  const box = document.querySelector(".story-fit");
+  if (!box) return;
+  const MIN = 11;
+  const MAX = 30;
+
+  const fits = () => box.scrollHeight <= box.clientHeight + 1;
+
+  const fit = () => {
+    document.documentElement.classList.remove("story-fitted");
+    let lo = MIN;
+    let hi = MAX;
+    box.style.fontSize = `${lo}px`;
+    if (!fits()) return; // too small a screen: leave it at MIN, scrolling
+    while (hi - lo > 0.25) {
+      const mid = (lo + hi) / 2;
+      box.style.fontSize = `${mid}px`;
+      if (fits()) lo = mid;
+      else hi = mid;
+    }
+    box.style.fontSize = `${lo}px`;
+    document.documentElement.classList.add("story-fitted");
+  };
+
+  fit();
+  // the webfont's metrics differ from the fallback's; refit once it is in
+  if (document.fonts) document.fonts.ready.then(fit);
+  let timer = null;
+  window.addEventListener("resize", () => {
+    clearTimeout(timer);
+    timer = setTimeout(fit, 120);
+  });
+  // opening or closing the Site Guide changes the room the story has
+  const guide = document.getElementById("site-guide");
+  if (guide) guide.addEventListener("toggle", fit);
+}
+
+initStoryFit();

@@ -1,5 +1,5 @@
 {
-  "generated": "2026-10-12",
+  "generated": "2026-11-01",
   "sections": [
     {
       "name": "home",
@@ -15,6 +15,11 @@
       "name": "blog",
       "href": "/blog/",
       "description": "plainer writing, in another theme"
+    },
+    {
+      "name": "undermyskinyoucanbeanything",
+      "href": "/undermyskinyoucanbeanything/",
+      "description": "a story, all at once"
     },
     {
       "name": "sightseeing",

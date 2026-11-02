@@ -38,6 +38,10 @@ jobs:
         run: |
           sudo apt-get update -qq && sudo apt-get install -y -qq pandoc
           python3 scripts/build-blog.py
+      # arg/ is a shelved experiment (the /0x/ Svelte app), kept local and out of
+      # git. Should it ever be committed, this keeps it off the site regardless.
+      - name: Keep the shelved arg/ off the site
+        run: rm -rf arg
       - name: Setup Pages
         uses: actions/configure-pages@v5
       - name: Upload artifact

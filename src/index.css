@@ -2519,7 +2519,8 @@ label input {
    break after the first in a paragraph was picking up an extra line. Undone
    for the homepage prose, on the page and inside the terminal. */
 .home-prose br,
-.tty-prose br {
+.tty-prose br,
+.story-fit br {
   display: inline;
   content: normal;
   margin: 0;
@@ -2557,4 +2558,130 @@ label input {
 .home-terminal #whatami,
 .home-terminal > hr {
   display: none;
+}
+
+/* ============================================================
+   THE STORY, ALL AT ONCE (/undermyskinyoucanbeanything/)
+   One paragraph that fits the screen: no scrolling, nothing to page through.
+   The page is a column the height of the screen -- the Site Guide at its own
+   height, the story taking whatever is left -- and initStoryFit() in index.js picks
+   the largest font size at which the whole paragraph fits that space. Without
+   JavaScript it is simply a long paragraph that scrolls.
+   ============================================================ */
+
+html:has(body.story-page) {
+  height: 100%;
+}
+
+body.story-page {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  /* wider than the site's 80ch measure: the story is sized to fill the
+     screen, and the line length is capped on the paragraph itself instead */
+  max-width: 72rem;
+  height: 100dvh;
+  box-sizing: border-box;
+  padding: 0 max(16px, 3vw) max(14px, 2.5vh);
+  overflow: hidden;
+}
+
+/* The Site Guide, folded to one row: as a stack it would take a fifth of the
+   screen the story needs. Same links, same order. */
+body.story-page #site-guide {
+  flex: 0 0 auto;
+  margin: 0;
+  padding: max(12px, 2vh) 0 max(10px, 1.8vh);
+}
+body.story-page #site-guide summary {
+  display: none;
+}
+body.story-page #site-guide .site-guide ul {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0 2.5ch;
+  margin: 0;
+  padding: 0;
+}
+body.story-page #site-guide .site-guide li,
+body.story-page #site-guide .site-guide li + li {
+  margin: 0;
+}
+
+.story-fit {
+  flex: 1 1 auto;
+  min-height: 0;
+  /* scrolls within its own space until initStoryFit() has sized it, so with JS
+     off, or on a screen too small to fit it legibly, nothing is cut off */
+  overflow-y: auto;
+  /* when it does scroll, a thin bar in the text's own grey rather than the
+     browser's bright default, which in dark mode is a white stripe */
+  scrollbar-width: thin;
+  scrollbar-color: var(--text-color-alt) transparent;
+}
+
+html.story-fitted .story-fit {
+  overflow: hidden;
+}
+
+/* The story's own face: Noto Sans Mono, the plain monospace swimming.fish
+   shows (it asks for generic `monospace`, which is Noto Sans Mono on her
+   machine). Self-hosted so every reader sees that face rather than their own
+   system's default. OFL; see src/fonts/OFL-noto-sans-mono.txt. */
+@font-face {
+  font-family: "Noto Sans Mono";
+  src: url("/src/fonts/noto-sans-mono-400.woff2") format("woff2");
+  font-weight: 400;
+  font-display: swap;
+}
+
+.story-fit p {
+  font-family: "Noto Sans Mono", monospace;
+  font-weight: 400;
+  /* about 110 characters a line at most, whatever size it settles at */
+  max-width: 110ch;
+  margin: 0 auto;
+  /* unitless, so it scales with the fitted size; the site's --line-height is
+     an absolute rem and would not */
+  line-height: 1.5;
+  /* words stay whole, as in the terminal */
+  hyphens: none;
+  overflow-wrap: normal;
+  text-wrap: pretty;
+}
+
+/* The backdrop: on this page the text runs nearly the full width, so there
+   are no clear margins for the art to be bold in. One even wash instead, the
+   same one narrow screens use (see PER-PAGE ART BACKDROP), at every width. */
+body.story-page .art-backdrop::before {
+  background-image: none;
+  background-color: color-mix(in srgb, var(--background-color) 45%, transparent);
+}
+
+/* ...and the drawing itself shown stronger than the other pages' backdrops:
+   here it is the scene the story is set in, not texture at the margins. */
+body.story-page .art-backdrop .header-art,
+:root[data-theme="dark"] body.story-page .art-backdrop .header-art {
+  opacity: 0.62;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) body.story-page .art-backdrop .header-art {
+    opacity: 0.62;
+  }
+}
+
+/* With the art that much present, each glyph carries a little pool of page
+   colour -- the same halo the homepage terminal uses -- so the words read
+   cleanly where they cross the densest parts of the drawing. */
+.story-fit p {
+  text-shadow:
+    0 0 3px var(--background-color),
+    0 0 2px var(--background-color),
+    0 0 1px var(--background-color);
+}
+
+/* a blank line in the source is a new paragraph: one line of space before it */
+.story-fit p + p {
+  margin-top: 1.5em;
 }

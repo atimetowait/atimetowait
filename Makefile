@@ -13,7 +13,8 @@ HTML_PAGES=index.html \
 	sightseeing/index.html \
 	listen/index.html \
 	archive/index.html \
-	blog/index.html
+	blog/index.html \
+	undermyskinyoucanbeanything/index.html
 
 JOURNAL_ENTRIES=$(filter-out demo/musings/_%.md,$(wildcard demo/musings/*.md))
 JOURNAL_HTML=$(patsubst demo/musings/%.md,musings/%/index.html,$(JOURNAL_ENTRIES))
@@ -62,7 +63,7 @@ clean:
 	rm -f demo/header-art.generated.html demo/header-art.m.generated.html
 	rm -f demo/art/*.generated.html
 	rm -f sightseeing/index.html
-	rm -rf musings bookkeeping listen archive blog
+	rm -rf musings bookkeeping listen archive blog undermyskinyoucanbeanything
 
 # One script produces the musings index, the archive page and the terminal's
 # manifest; they share the same front-matter parse.
@@ -110,6 +111,10 @@ FLARE_myownkin=1.6
 # scripts/build-header-art.py.
 TIERS_spiritual_instability=3
 
+# pilgrimage is two blended drawings with snow scattered through the sky, so its
+# runs break up more than a single drawing's; 4 tiers brings it back in line.
+TIERS_pilgrimage=4
+
 demo/art/%.generated.html: demo/art/%.txt scripts/build-header-art.py
 	python3 scripts/build-header-art.py --source $< --output $@ --class art-backdrop $(if $(FLARE_$*),--flare=$(FLARE_$*)) $(if $(TIERS_$*),--tiers=$(TIERS_$*))
 
@@ -135,6 +140,15 @@ musings/index.html: demo/musings.generated.md demo/template.html Makefile $(ART_
 	mkdir -p musings
 	$(PANDOC) $(call art_flag,musings) -Vbodyclass=musings-index -i demo/musings.generated.md -o $@
 
+# The story sized to the screen (THE STORY, ALL AT ONCE in src/index.css).
+# hard_line_breaks: pressing Enter once in demo/pilgrimage.md is a line break
+# on the page. Smart quotes off: the apostrophes and quotes stay as typed.
+# Its backdrop is demo/art/pilgrimage.txt: running.txt and twins.txt blended,
+# the walk home leading into the embrace.
+undermyskinyoucanbeanything/index.html: demo/pilgrimage.md demo/template.html Makefile $(ART_HTML)
+	mkdir -p undermyskinyoucanbeanything
+	$(PANDOC) $(call art_flag,pilgrimage) -f markdown+hard_line_breaks-smart -Vbodyclass=story-page -i demo/pilgrimage.md -o $@
+
 bookkeeping/index.html: demo/bookkeeping.md demo/template.html Makefile $(ART_HTML)
 	mkdir -p bookkeeping
 	$(PANDOC) $(call art_flag,bookkeeping) -i demo/bookkeeping.md -o $@
@@ -155,6 +169,12 @@ musings/%/index.html: demo/musings/%.md demo/template.html Makefile $(ART_HTML)
 	mkdir -p musings/$*
 	$(JOURNAL_PANDOC) $(call art_flag,$*) -Vbodyclass=journal-entry-page -i demo/musings/$*.md -o $@
 
+# /0x/: the shelved Svelte experiment in arg/, built into 0x/ (gitignored).
+# Local only -- the Pages workflow neither builds nor publishes it. Not part of
+# `all`, so editing prose never needs Node. Live editing: `cd arg && npm run dev`.
+arg:
+	cd arg && npm ci && npm run build
+
 # live-server (flake.nix's devShell) gives live-reload on file change. Where
 # it isn't on PATH -- no Nix/direnv, e.g. this sandbox -- fall back to
 # scripts/dev-server.py, which reimplements entr + live-server's rebuild-and-
@@ -174,4 +194,4 @@ watch:
 	printf '%s\n' demo/index.md demo/bookkeeping.md demo/sightseeing.md demo/listen.md demo/template.html demo/musings.generated.md demo/archive.generated.md demo/header-art.txt demo/art/*.txt Makefile scripts/build-musings-index.py scripts/build-header-art.py | entr -n make
 	find demo/musings -name '*.md' -print 2>/dev/null | entr -n make
 
-.PHONY: all clean serve watch fonts
+.PHONY: all clean serve watch fonts arg

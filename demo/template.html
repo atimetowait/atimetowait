@@ -14,7 +14,7 @@ $if(keywords)$
   <meta name="keywords" content="$for(keywords)$$keywords$$sep$, $endfor$" />
 $endif$
   <meta name="description" content="$if(description-meta)$$description-meta$$else$$if(summary)$$summary$$else$Personal site and writing by Alice C. — songwriter, composer, artist. Chronic illness, grief, and getting better naturally.$endif$$endif$" />
-  <title>$if(page-title)$$page-title$ – $endif$$title$</title>
+  <title>$if(bare-title)$$page-title$$else$$if(page-title)$$page-title$ – $endif$$title$$endif$</title>
   <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
 
   <meta property="og:site_name" content="$title$" />
@@ -104,6 +104,7 @@ $endif$
   <li><a href="/">Home</a></li>
   <li><a href="/musings/">Musings</a></li>
   <li><a href="/blog/">Blog</a></li>
+  <li><a href="/undermyskinyoucanbeanything/">undermyskinyoucanbeanything</a></li>
   <!-- Unlinked for now while these sections are still being worked through.
        Pages still exist at their URLs, just nothing in the nav points to
        them. Restore by uncommenting. -->
