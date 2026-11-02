@@ -43,13 +43,13 @@ the other part of a pilgrimage is the return.
 it never feels as long on the way home though, or maybe just after smiling yourself silly.
 your feet become a little bit lighter. body, too. your mind can wander more free.
 all the street lights are glowing, glowing this warm hue that refracted off your blush. 
-it had almost fooled me, until i realized it was just you flushed Red. 
+it had almost fooled me until i realized it was just you flushed Red. 
 you were singing to yourself and i finally admired that you weren't as tone-deaf as i thought you were. on the beats in between to catch your breath, i looked up and heard humming, but only in atonal ways. constant, buzzing ways. 
 the kind that you hear for a lifetime and only once you move away from home, you finally understand what the hell "noise pollution" even is. 
 but it kept getting louder, and suddenly there was no pitch to fake a melody. 
-it was not coming from you, nor from me. it was still growing, and it was festering something inside of my chest. there were words, and they werent even parsable. it felt like speech in binary, electricity's hymn — something i could never fucking understand in the first place. 
+it was not coming from you, nor from me. it was gnawing, it was festering something inside of my chest. there were words, and they werent even parsable. it felt like speech in binary, electricity's hymn — something i could never fucking understand in the first place. 
 after walking for so long i began to think that the power lines had taken a liking to me. 
 i saw a downed one up ahead. there were no more thoughts i could find to compete with. 
 
-i took a breath and before i had filled my lungs up, my hand reached — i took a handful of your hair and reminded myself of every little thing i had been missing my whole life.
+i took a breath and before i had filled my lungs up, my hand reached — i took a fistful of your hair and reminded myself of every little thing i had been missing my whole life.
 :::
