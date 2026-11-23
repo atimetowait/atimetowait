@@ -59,7 +59,7 @@ The old baseball trophy's gleam demands my attention
 Even if the semblance of family is weak in me. I still have enough of a picture through the movies, and shows. Books I've read...childhood friends who have taken me in like a stray cat when all the wandering I do just starts to look a bit pathetic. 
 Maybe I am that sports trophy too — with its words, names, phrases, titles…engraved right onto me. 
 
-I wear everyone as if I'm their champion. 
+I wear everyone as if I'm their prize. 
 <br>
 
 &nbsp;After several glances all over, scanning them back and forth, hoping to find a clue of some sorts. I put it down for the first time. 
