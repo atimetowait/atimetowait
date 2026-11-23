@@ -8,6 +8,8 @@ summary: "gon' shopping"
 bare-header: true
 # the tab shows the page title alone, without " – atimetowait"
 bare-title: true
+# no description in link previews, just the site name and title
+no-description: true
 ---
 
 <!-- Served at /gonshopping/, one scrolling column (THE

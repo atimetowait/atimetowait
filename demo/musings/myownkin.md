@@ -11,6 +11,8 @@ mood: bone
 journal-entry: true
 bare-header: true
 from: markdown+hard_line_breaks
+# no description in link previews, just the site name and title
+no-description: true
 ---
 For so long I have kept myself all down under.
 Quelling that hunger, I learned in small portions.

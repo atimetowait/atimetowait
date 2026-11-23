@@ -11,6 +11,8 @@ mood: bone
 journal-entry: true
 bare-header: true
 from: markdown+hard_line_breaks
+# no description in link previews, just the site name and title
+no-description: true
 ---
 It's been a year, and I still have those birthday cards, the five I got from you from over the years, and honestly.
 What should I even do with them?

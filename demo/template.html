@@ -13,14 +13,22 @@ $endif$
 $if(keywords)$
   <meta name="keywords" content="$for(keywords)$$keywords$$sep$, $endfor$" />
 $endif$
+$if(no-description)$
+  <!-- no-description: true in the front matter -- no description at all, so
+       link previews (Discord etc.) show only the site name and title -->
+$else$
   <meta name="description" content="$if(description-meta)$$description-meta$$else$$if(summary)$$summary$$else$Personal site and writing by Alice C. — songwriter, composer, artist. Chronic illness, grief, and getting better naturally.$endif$$endif$" />
+$endif$
   <title>$if(bare-title)$$page-title$$else$$if(page-title)$$page-title$ – $endif$$title$$endif$</title>
   <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
 
   <meta property="og:site_name" content="$title$" />
   <meta property="og:type" content="$if(journal-entry)$article$else$website$endif$" />
   <meta property="og:title" content="$if(page-title)$$page-title$$else$$title$$endif$" />
+$if(no-description)$
+$else$
   <meta property="og:description" content="$if(summary)$$summary$$else$$subtitle$$endif$" />
+$endif$
 $if(date-meta)$
   <!-- date-meta, not date: -Vdate below feeds the version-footer build stamp
        into the plain $date$ slot too, which would otherwise overwrite every

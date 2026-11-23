@@ -11,6 +11,8 @@ mood: bone
 journal-entry: true
 bare-header: true
 from: markdown+hard_line_breaks
+# no description in link previews, just the site name and title
+no-description: true
 ---
 
 Write your dispatch here. Press Enter once for a new line. Leave a blank line for a new paragraph.

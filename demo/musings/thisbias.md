@@ -12,6 +12,8 @@ journal-entry: true
 no-reveal: true
 bare-header: true
 from: markdown+hard_line_breaks
+# no description in link previews, just the site name and title
+no-description: true
 ---
 <p><em>Oddity 1: The Ossuary</em>
 </p>
