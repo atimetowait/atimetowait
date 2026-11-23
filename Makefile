@@ -14,7 +14,7 @@ HTML_PAGES=index.html \
 	listen/index.html \
 	archive/index.html \
 	blog/index.html \
-	undermyskinyoucanbeanything/index.html
+	gonshopping/index.html
 
 JOURNAL_ENTRIES=$(filter-out demo/musings/_%.md,$(wildcard demo/musings/*.md))
 JOURNAL_HTML=$(patsubst demo/musings/%.md,musings/%/index.html,$(JOURNAL_ENTRIES))
@@ -63,7 +63,7 @@ clean:
 	rm -f demo/header-art.generated.html demo/header-art.m.generated.html
 	rm -f demo/art/*.generated.html
 	rm -f sightseeing/index.html
-	rm -rf musings bookkeeping listen archive blog undermyskinyoucanbeanything
+	rm -rf musings bookkeeping listen archive blog gonshopping
 
 # One script produces the musings index, the archive page and the terminal's
 # manifest; they share the same front-matter parse.
@@ -140,13 +140,13 @@ musings/index.html: demo/musings.generated.md demo/template.html Makefile $(ART_
 	mkdir -p musings
 	$(PANDOC) $(call art_flag,musings) -Vbodyclass=musings-index -i demo/musings.generated.md -o $@
 
-# The story sized to the screen (THE STORY, ALL AT ONCE in src/index.css).
+# The story, one scrolling column (THE STORY in src/index.css).
 # hard_line_breaks: pressing Enter once in demo/pilgrimage.md is a line break
 # on the page. Smart quotes off: the apostrophes and quotes stay as typed.
 # Its backdrop is demo/art/pilgrimage.txt: running.txt and twins.txt blended,
 # the walk home leading into the embrace.
-undermyskinyoucanbeanything/index.html: demo/pilgrimage.md demo/template.html Makefile $(ART_HTML)
-	mkdir -p undermyskinyoucanbeanything
+gonshopping/index.html: demo/pilgrimage.md demo/template.html Makefile $(ART_HTML)
+	mkdir -p gonshopping
 	$(PANDOC) $(call art_flag,pilgrimage) -f markdown+hard_line_breaks-smart -Vbodyclass=story-page -i demo/pilgrimage.md -o $@
 
 bookkeeping/index.html: demo/bookkeeping.md demo/template.html Makefile $(ART_HTML)
